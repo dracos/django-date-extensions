@@ -130,6 +130,9 @@ YEAR_INPUT_FORMATS = (
 
 # TODO: Expand to work more like my PHP strtotime()-using function
 class ApproximateDateFormField(forms.fields.Field):
+    def __init__(self, max_length=10, *args, **kwargs):
+        super(ApproximateDateFormField, self).__init__(*args, **kwargs)
+
     def clean(self, value):
         super(ApproximateDateFormField, self).clean(value)
         if value in (None, ''):
@@ -192,7 +195,7 @@ class PrettyDateField(forms.fields.Field):
             except ValueError:
                 continue
 
-        if future is None:
+        if self.future is None:
             raise ValidationError('Please enter a valid date.')
 
         # Allow year to be omitted. Do the sensible thing, either past or future.
