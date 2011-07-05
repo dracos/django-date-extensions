@@ -88,7 +88,8 @@ class ApproximateDateField(models.CharField):
             msg = _('Invalid date: %s') % _(str(e))
             raise exceptions.ValidationError(msg)
 
-    def get_db_prep_value(self, value):
+    # note - could rename to 'get_prep_value' but would break 1.1 compatability
+    def get_db_prep_value(self, value, connection=None, prepared=False):
         if value in (None, ''):
                 return ''
         if isinstance(value, ApproximateDate):
