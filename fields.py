@@ -61,7 +61,7 @@ class ApproximateDate(object):
         return True
     
     def __len__(self):
-        return len( str( self ))
+        return len( self.__repr__() )
 
 ansi_date_re = re.compile(r'^\d{4}-\d{1,2}-\d{1,2}$')
 
