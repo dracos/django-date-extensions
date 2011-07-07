@@ -59,6 +59,9 @@ class ApproximateDate(object):
         if other is None or (self.year, self.month, self.day) < (other.year, other.month, other.day):
             return False
         return True
+    
+    def __len__(self):
+        return len( str( self ))
 
 ansi_date_re = re.compile(r'^\d{4}-\d{1,2}-\d{1,2}$')
 
