@@ -96,8 +96,10 @@ class ApproximateDateField(models.CharField):
         super(ApproximateDateField, self).__init__(*args, **kwargs)
 
     def to_python(self, value):
-        if value in (None, ''):
+        if value is None:
             return None
+        if isinstance(value, str) and value == '':
+            return ''
         if isinstance(value, ApproximateDate):
             return value
 
@@ -116,7 +118,9 @@ class ApproximateDateField(models.CharField):
 
     # note - could rename to 'get_prep_value' but would break 1.1 compatability
     def get_db_prep_value(self, value, connection=None, prepared=False):
-        if value in (None, ''):
+        if value is None:
+            return None
+        if isinstance(value, str) and value == '':
             return ''
         if isinstance(value, ApproximateDate):
             return repr(value)
