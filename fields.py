@@ -53,6 +53,8 @@ class ApproximateDate(object):
     def __eq__(self, other):
         if other is None:
             return False
+        if not isinstance(other, ApproximateDate):
+            return False
         elif (self.year, self.month, self.day, self.future) != (other.year, other.month, other.day, other.future):
             return False
         else:
@@ -96,10 +98,8 @@ class ApproximateDateField(models.CharField):
         super(ApproximateDateField, self).__init__(*args, **kwargs)
 
     def to_python(self, value):
-        if value is None:
+        if value in (None, ''):
             return None
-        if isinstance(value, str) and value == '':
-            return ''
         if isinstance(value, ApproximateDate):
             return value
 
@@ -118,9 +118,7 @@ class ApproximateDateField(models.CharField):
 
     # note - could rename to 'get_prep_value' but would break 1.1 compatability
     def get_db_prep_value(self, value, connection=None, prepared=False):
-        if value is None:
-            return None
-        if isinstance(value, str) and value == '':
+        if value in (None, ''):
             return ''
         if isinstance(value, ApproximateDate):
             return repr(value)

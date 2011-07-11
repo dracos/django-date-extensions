@@ -13,6 +13,12 @@ class CompareDates(unittest.TestCase):
         y_future   = ApproximateDate( year=2100 );
         future     = ApproximateDate( future=True );
 
+        # check that we can be compared to None, '' and u''
+        for bad_val in ( '', u'', None ):
+            self.assertFalse( y_past in ( bad_val, ) )
+            self.assertFalse( y_past == bad_val      )
+            self.assertTrue(  y_past != bad_val      )
+
         # sanity check
         self.assertTrue(  y_past   == y_past   )
         self.assertTrue(  y_future == y_future )
