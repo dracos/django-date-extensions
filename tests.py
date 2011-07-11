@@ -5,16 +5,63 @@ from fields import ApproximateDate
 import unittest
 
 
+class CompareDates(unittest.TestCase):
+    
+    def test_compare(self):
+
+        y_past     = ApproximateDate( year=2000 );
+        y_future   = ApproximateDate( year=2100 );
+        future     = ApproximateDate( future=True );
+
+        # sanity check
+        self.assertTrue(  y_past   == y_past   )
+        self.assertTrue(  y_future == y_future )
+
+        self.assertFalse( y_past   != y_past   )
+        self.assertFalse( y_future != y_future )
+
+        self.assertTrue(  y_past   != y_future )
+        self.assertTrue(  y_future != y_past   )
+
+        self.assertTrue(  y_future >  y_past   )
+        self.assertTrue(  y_future >= y_past   )
+        self.assertFalse( y_past   >  y_future )
+        self.assertFalse( y_past   >= y_future )
+
+        self.assertTrue(  y_past   <  y_future )
+        self.assertTrue(  y_past   <= y_future )
+        self.assertFalse( y_future <  y_past   )
+        self.assertFalse( y_future <= y_past   )
+
+        # Future dates are always greater
+        self.assertTrue( y_past   <  future )
+        self.assertTrue( y_past   <= future )
+        self.assertTrue( y_future <  future )
+        self.assertTrue( y_future <= future )
+
+        self.assertTrue( future >  y_past   )
+        self.assertTrue( future >= y_past   )
+        self.assertTrue( future >  y_future )
+        self.assertTrue( future >= y_future )
+
+        # Future dates are equal to themselves (so that sorting is sane)
+        self.assertFalse( future <  future )
+        self.assertTrue(  future <= future )
+        self.assertTrue(  future == future )
+        self.assertTrue(  future >= future )
+        self.assertFalse( future >  future )
+
+
 class Lengths(unittest.TestCase):
     known_lengths = (
         ({ 'year':1999,                        }, 10 ),
         ({ 'year':1999, 'month': 01,           }, 10 ),
         ({ 'year':1999, 'month': 01, 'day': 01 }, 10 ),
+        ({ 'future': True },                      6  ),
     );
     
     def test_length(self):
         for kwargs, length in self.known_lengths:
-            print kwargs
             approx = ApproximateDate( **kwargs )
             self.assertEqual( len( approx ), length )
 
