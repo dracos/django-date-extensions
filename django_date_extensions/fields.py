@@ -9,8 +9,12 @@ from django.utils import dateformat
 class ApproximateDate(object):
     """A date object that accepts 0 for month or day to mean we don't
        know when it is within that month/year."""
-    def __init__(self, year, month=0, day=0):
-        if year and month and day:
+    def __init__(self, year=0, month=0, day=0, future=False):
+        if future:
+            d = None
+            if year or month or day:
+                raise ValueError("Future dates can have no year, month or day")
+        elif year and month and day:
             d = date(year, month, day)
         elif year and month:
             d = date(year, month, 1)
@@ -20,12 +24,16 @@ class ApproximateDate(object):
             d = date(year, 1, 1)
         else:
             raise ValueError("You must specify a year")
-        self.year = year
-        self.month = month
-        self.day = day
+
+        self.future = future
+        self.year   = year
+        self.month  = month
+        self.day    = day
 
     def __repr__(self):
-        if self.year and self.month and self.day:
+        if self.future:
+            return 'future'
+        elif self.year and self.month and self.day:
             return "%04d-%02d-%02d" % (self.year, self.month, self.day)
         elif self.year and self.month:
             return "%04d-%02d-00" % (self.year, self.month)
@@ -33,32 +41,49 @@ class ApproximateDate(object):
             return "%04d-00-00" % self.year
 
     def __str__(self):
-        if self.year and self.month and self.day:
+        if self.future:
+            return 'future'
+        elif self.year and self.month and self.day:
             return dateformat.format(self, "jS F Y")
         elif self.year and self.month:
             return dateformat.format(self, "F Y")
         elif self.year:
             return dateformat.format(self, "Y")
 
-    def __lt__(self, other):
-        if other is None or (self.year, self.month, self.day) >= (other.year, other.month, other.day):
+    def __eq__(self, other):
+        if other is None:
             return False
-        return True
+        if not isinstance(other, ApproximateDate):
+            return False
+        elif (self.year, self.month, self.day, self.future) != (other.year, other.month, other.day, other.future):
+            return False
+        else:
+            return True
+        
+    def __lt__(self, other):
+        if other is None:
+            return False
+        elif self.future or other.future:
+            if self.future: 
+                return False   # regardless of other.future it won't be less
+            else:
+                return True    # we were not in future so they are
+        elif(self.year, self.month, self.day) < (other.year, other.month, other.day):
+            return True
+        else:
+            return False
 
     def __le__(self, other):
-        if other is None or (self.year, self.month, self.day) > (other.year, other.month, other.day):
-            return False
-        return True
+        return self < other or self == other
 
     def __gt__(self, other):
-        if other is None or (self.year, self.month, self.day) <= (other.year, other.month, other.day):
-            return False
-        return True
+        return not self <= other
 
     def __ge__(self, other):
-        if other is None or (self.year, self.month, self.day) < (other.year, other.month, other.day):
-            return False
-        return True
+        return self > other or self == other
+    
+    def __len__(self):
+        return len( self.__repr__() )
 
 ansi_date_re = re.compile(r'^\d{4}-\d{1,2}-\d{1,2}$')
 
@@ -78,6 +103,9 @@ class ApproximateDateField(models.CharField):
         if isinstance(value, ApproximateDate):
             return value
 
+        if value == 'future':
+            return ApproximateDate(future=True)
+
         if not ansi_date_re.search(value):
             raise ValidationError('Enter a valid date in YYYY-MM-DD format.')
 
@@ -88,13 +116,16 @@ class ApproximateDateField(models.CharField):
             msg = _('Invalid date: %s') % _(str(e))
             raise exceptions.ValidationError(msg)
 
-    def get_db_prep_value(self, value):
+    # note - could rename to 'get_prep_value' but would break 1.1 compatability
+    def get_db_prep_value(self, value, connection=None, prepared=False):
         if value in (None, ''):
-                return ''
+            return ''
         if isinstance(value, ApproximateDate):
-                return repr(value)
+            return repr(value)
         if isinstance(value, date):
-                return dateformat.format(value, "Y-m-d")
+            return dateformat.format(value, "Y-m-d")
+        if value == 'future':
+            return 'future'
         if not ansi_date_re.search(value):
             raise ValidationError('Enter a valid date in YYYY-MM-DD format.')
         return value
@@ -137,6 +168,8 @@ class ApproximateDateFormField(forms.fields.Field):
         super(ApproximateDateFormField, self).clean(value)
         if value in (None, ''):
             return None
+        if value == 'future':
+            return ApproximateDate(future=True)
         if isinstance(value, ApproximateDate):
             return value
         value = re.sub('(?<=\d)(st|nd|rd|th)', '', value.strip())
@@ -184,6 +217,8 @@ class PrettyDateField(forms.fields.Field):
         super(PrettyDateField, self).clean(value)
         if value in (None, ''):
             return None
+        if value == 'future':
+            return ApproximateDate(future=True)
         if isinstance(value, datetime.datetime):
             return value.date()
         if isinstance(value, datetime.date):
