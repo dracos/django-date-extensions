@@ -9,9 +9,9 @@ class CompareDates(unittest.TestCase):
     
     def test_compare(self):
 
-        y_past     = ApproximateDate( year=2000 );
-        y_future   = ApproximateDate( year=2100 );
-        future     = ApproximateDate( future=True );
+        y_past     = ApproximateDate( year=2000 )
+        y_future   = ApproximateDate( year=2100 )
+        future     = ApproximateDate( future=True )
 
         # check that we can be compared to None, '' and u''
         for bad_val in ( '', u'', None ):
