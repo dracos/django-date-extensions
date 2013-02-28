@@ -9,9 +9,10 @@ class CompareDates(unittest.TestCase):
     
     def test_compare(self):
 
-        y_past     = ApproximateDate( year=2000 );
-        y_future   = ApproximateDate( year=2100 );
-        future     = ApproximateDate( future=True );
+        y_past     = ApproximateDate( year=2000 )
+        y_future   = ApproximateDate( year=2100 )
+        future     = ApproximateDate( future=True )
+        future_too = ApproximateDate( future=True )
 
         # check that we can be compared to None, '' and u''
         for bad_val in ( '', u'', None ):
@@ -51,12 +52,13 @@ class CompareDates(unittest.TestCase):
         self.assertTrue( future >= y_future )
 
         # Future dates are equal to themselves (so that sorting is sane)
-        self.assertFalse( future <  future )
-        self.assertTrue(  future <= future )
-        self.assertTrue(  future == future )
-        self.assertTrue(  future >= future )
-        self.assertFalse( future >  future )
-
+        self.assertFalse( future <  future     )
+        self.assertTrue(  future <= future     )
+        self.assertTrue(  future == future     )
+        self.assertTrue(  future >= future     )
+        self.assertFalse( future >  future     )
+        self.assertTrue(  future == future_too )
+        self.assertFalse( future != future_too )
 
 class Lengths(unittest.TestCase):
     known_lengths = (
