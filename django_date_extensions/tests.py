@@ -127,6 +127,7 @@ class Lengths(unittest.TestCase):
         ({ 'year':1999, 'month': 01,           }, 10 ),
         ({ 'year':1999, 'month': 01, 'day': 01 }, 10 ),
         ({ 'future': True },                      6  ),
+        ({ 'past': True },                        4  ),
     );
     
     def test_length(self):
