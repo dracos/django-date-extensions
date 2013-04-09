@@ -16,6 +16,15 @@ class PastAndFuture(unittest.TestCase):
         self.assertRaises(ValueError, ApproximateDate, past=True,   year=2000 )
 
 
+    def test_stringification(self):
+
+        self.assertEqual(str(ApproximateDate(future=True)), 'future')
+        self.assertEqual(str(ApproximateDate(past=True)),   'past')
+
+        self.assertEqual(repr(ApproximateDate(future=True)), 'future')
+        self.assertEqual(repr(ApproximateDate(past=True)),   'past')
+
+
 class CompareDates(unittest.TestCase):
     
     def test_compare(self):
