@@ -9,11 +9,13 @@ from django.utils import dateformat
 class ApproximateDate(object):
     """A date object that accepts 0 for month or day to mean we don't
        know when it is within that month/year."""
-    def __init__(self, year=0, month=0, day=0, future=False):
-        if future:
+    def __init__(self, year=0, month=0, day=0, future=False, past=False):
+        if future and past:
+            raise ValueError("Can't be both future and past")
+        elif future or past:
             d = None
             if year or month or day:
-                raise ValueError("Future dates can have no year, month or day")
+                raise ValueError("Future or past dates can have no year, month or day")
         elif year and month and day:
             d = date(year, month, day)
         elif year and month:
@@ -26,13 +28,14 @@ class ApproximateDate(object):
             raise ValueError("You must specify a year")
 
         self.future = future
+        self.past   = past
         self.year   = year
         self.month  = month
         self.day    = day
 
     def __repr__(self):
-        if self.future:
-            return 'future'
+        if self.future or self.past:
+            return str(self)
         elif self.year and self.month and self.day:
             return "%04d-%02d-%02d" % (self.year, self.month, self.day)
         elif self.year and self.month:
@@ -43,6 +46,8 @@ class ApproximateDate(object):
     def __str__(self):
         if self.future:
             return 'future'
+        if self.past:
+            return 'past'
         elif self.year and self.month and self.day:
             return dateformat.format(self, "jS F Y")
         elif self.year and self.month:
@@ -55,7 +60,7 @@ class ApproximateDate(object):
             return False
         if not isinstance(other, ApproximateDate):
             return False
-        elif (self.year, self.month, self.day, self.future) != (other.year, other.month, other.day, other.future):
+        elif (self.year, self.month, self.day, self.future, self.past) != (other.year, other.month, other.day, other.future, other.past):
             return False
         else:
             return True
@@ -71,6 +76,11 @@ class ApproximateDate(object):
                 return False   # regardless of other.future it won't be less
             else:
                 return True    # we were not in future so they are
+        elif self.past or other.past:
+            if other.past: 
+                return False   # regardless of self.past it won't be more
+            else:
+                return True    # we were not in past so they are
         elif(self.year, self.month, self.day) < (other.year, other.month, other.day):
             return True
         else:
@@ -108,6 +118,8 @@ class ApproximateDateField(models.CharField):
 
         if value == 'future':
             return ApproximateDate(future=True)
+        if value == 'past':
+            return ApproximateDate(past=True)
 
         if not ansi_date_re.search(value):
             raise ValidationError('Enter a valid date in YYYY-MM-DD format.')
@@ -129,6 +141,8 @@ class ApproximateDateField(models.CharField):
             return dateformat.format(value, "Y-m-d")
         if value == 'future':
             return 'future'
+        if value == 'past':
+            return 'past'
         if not ansi_date_re.search(value):
             raise ValidationError('Enter a valid date in YYYY-MM-DD format.')
         return value
@@ -173,6 +187,8 @@ class ApproximateDateFormField(forms.fields.Field):
             return None
         if value == 'future':
             return ApproximateDate(future=True)
+        if value == 'past':
+            return ApproximateDate(past=True)
         if isinstance(value, ApproximateDate):
             return value
         value = re.sub('(?<=\d)(st|nd|rd|th)', '', value.strip())
@@ -222,6 +238,8 @@ class PrettyDateField(forms.fields.Field):
             return None
         if value == 'future':
             return ApproximateDate(future=True)
+        if value == 'past':
+            return ApproximateDate(past=True)
         if isinstance(value, datetime.datetime):
             return value.date()
         if isinstance(value, datetime.date):

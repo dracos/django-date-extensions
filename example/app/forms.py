@@ -1,5 +1,5 @@
 from django import forms
-from ext.fields import PrettyDateField, ApproximateDateFormField
+from django_date_extensions.fields import PrettyDateField, ApproximateDateFormField
 
 class DatesForm(forms.Form):
     near_future = PrettyDateField(future=True)
