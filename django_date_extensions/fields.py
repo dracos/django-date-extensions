@@ -15,7 +15,7 @@ class ApproximateDate(object):
         elif future or past:
             d = None
             if year or month or day:
-                raise ValueError("Future dates can have no year, month or day")
+                raise ValueError("Future or past dates can have no year, month or day")
         elif year and month and day:
             d = date(year, month, day)
         elif year and month:
@@ -118,6 +118,8 @@ class ApproximateDateField(models.CharField):
 
         if value == 'future':
             return ApproximateDate(future=True)
+        if value == 'past':
+            return ApproximateDate(past=True)
 
         if not ansi_date_re.search(value):
             raise ValidationError('Enter a valid date in YYYY-MM-DD format.')
@@ -139,6 +141,8 @@ class ApproximateDateField(models.CharField):
             return dateformat.format(value, "Y-m-d")
         if value == 'future':
             return 'future'
+        if value == 'past':
+            return 'past'
         if not ansi_date_re.search(value):
             raise ValidationError('Enter a valid date in YYYY-MM-DD format.')
         return value
@@ -183,6 +187,8 @@ class ApproximateDateFormField(forms.fields.Field):
             return None
         if value == 'future':
             return ApproximateDate(future=True)
+        if value == 'past':
+            return ApproximateDate(past=True)
         if isinstance(value, ApproximateDate):
             return value
         value = re.sub('(?<=\d)(st|nd|rd|th)', '', value.strip())
@@ -232,6 +238,8 @@ class PrettyDateField(forms.fields.Field):
             return None
         if value == 'future':
             return ApproximateDate(future=True)
+        if value == 'past':
+            return ApproximateDate(past=True)
         if isinstance(value, datetime.datetime):
             return value.date()
         if isinstance(value, datetime.date):
