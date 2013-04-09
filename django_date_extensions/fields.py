@@ -9,8 +9,10 @@ from django.utils import dateformat
 class ApproximateDate(object):
     """A date object that accepts 0 for month or day to mean we don't
        know when it is within that month/year."""
-    def __init__(self, year=0, month=0, day=0, future=False):
-        if future:
+    def __init__(self, year=0, month=0, day=0, future=False, past=False):
+        if future and past:
+            raise ValueError("Can't be both future and past")
+        elif future or past:
             d = None
             if year or month or day:
                 raise ValueError("Future dates can have no year, month or day")
@@ -26,6 +28,7 @@ class ApproximateDate(object):
             raise ValueError("You must specify a year")
 
         self.future = future
+        self.past   = past
         self.year   = year
         self.month  = month
         self.day    = day

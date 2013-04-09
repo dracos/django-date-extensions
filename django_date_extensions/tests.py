@@ -5,6 +5,17 @@ from fields import ApproximateDate
 import unittest
 
 
+class PastAndFuture(unittest.TestCase):
+
+    def test_setting_both(self):
+        self.assertRaises(ValueError, ApproximateDate, past=True, future=True )
+
+
+    def test_setting_with_dates(self):
+        self.assertRaises(ValueError, ApproximateDate, future=True, year=2000 )
+        self.assertRaises(ValueError, ApproximateDate, past=True,   year=2000 )
+
+
 class CompareDates(unittest.TestCase):
     
     def test_compare(self):
