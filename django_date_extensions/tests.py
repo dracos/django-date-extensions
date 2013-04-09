@@ -29,6 +29,8 @@ class CompareDates(unittest.TestCase):
     
     def test_compare(self):
 
+        past       = ApproximateDate( past=True )
+        past_too   = ApproximateDate( past=True )
         y_past     = ApproximateDate( year=2000 )
         y_future   = ApproximateDate( year=2100 )
         future     = ApproximateDate( future=True )
@@ -63,15 +65,46 @@ class CompareDates(unittest.TestCase):
         # Future dates are always greater
         self.assertTrue( y_past   <  future )
         self.assertTrue( y_past   <= future )
+        self.assertTrue( y_past   != future )
         self.assertTrue( y_future <  future )
         self.assertTrue( y_future <= future )
+        self.assertTrue( y_future != future )
 
         self.assertTrue( future >  y_past   )
         self.assertTrue( future >= y_past   )
+        self.assertTrue( future != y_past   )
         self.assertTrue( future >  y_future )
         self.assertTrue( future >= y_future )
+        self.assertTrue( future != y_future )
 
-        # Future dates are equal to themselves (so that sorting is sane)
+        # Past dates are always lesser
+        self.assertTrue( y_past   >  past )
+        self.assertTrue( y_past   >= past )
+        self.assertTrue( y_past   != past )
+        self.assertTrue( y_future >  past )
+        self.assertTrue( y_future >= past )
+        self.assertTrue( y_future != past )
+
+        self.assertTrue( past <  y_past   )
+        self.assertTrue( past <= y_past   )
+        self.assertTrue( past != y_past   )
+        self.assertTrue( past <  y_future )
+        self.assertTrue( past <= y_future )
+        self.assertTrue( past != y_future )
+        
+
+        # Past and future comparisons
+        self.assertTrue( past   <  future )
+        self.assertTrue( past   <= future )
+        self.assertTrue( past   != future )
+
+        self.assertTrue( future >  past   )
+        self.assertTrue( future >= past   )
+        self.assertTrue( future != past   )
+        
+
+
+        # Future and past dates are equal to themselves (so that sorting is sane)
         self.assertFalse( future <  future     )
         self.assertTrue(  future <= future     )
         self.assertTrue(  future == future     )
@@ -79,6 +112,14 @@ class CompareDates(unittest.TestCase):
         self.assertFalse( future >  future     )
         self.assertTrue(  future == future_too )
         self.assertFalse( future != future_too )
+
+        self.assertFalse( past   <  past       )
+        self.assertTrue(  past   <= past       )
+        self.assertTrue(  past   == past       )
+        self.assertTrue(  past   >= past       )
+        self.assertFalse( past   >  past       )
+        self.assertTrue(  past   == past_too   )
+        self.assertFalse( past   != past_too   )
 
 class Lengths(unittest.TestCase):
     known_lengths = (
