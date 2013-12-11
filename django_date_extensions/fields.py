@@ -1,6 +1,6 @@
 import time, re, datetime
 from datetime import date
-from widgets import PrettyDateInput
+from django_date_extensions.widgets import PrettyDateInput
 from django.db import models
 from django import forms
 from django.forms import ValidationError
@@ -127,9 +127,9 @@ class ApproximateDateField(models.CharField):
         year, month, day = map(int, value.split('-'))
         try:
             return ApproximateDate(year, month, day)
-        except ValueError, e:
-            msg = _('Invalid date: %s') % _(str(e))
-            raise exceptions.ValidationError(msg)
+        except ValueError as e:
+            msg = 'Invalid date: %s' % str(e)
+            raise ValidationError(msg)
 
     # note - could rename to 'get_prep_value' but would break 1.1 compatability
     def get_db_prep_value(self, value, connection=None, prepared=False):
