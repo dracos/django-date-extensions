@@ -2,3 +2,5 @@
 .venv
 /MANIFEST
 /dist
+atlassian-ide-plugin.xml
+example/django_date_extensions

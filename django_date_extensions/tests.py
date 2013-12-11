@@ -1,8 +1,8 @@
 import os
 os.environ['DJANGO_SETTINGS_MODULE'] = 'example.settings'
-
-from fields import ApproximateDate
 import unittest
+
+from .fields import ApproximateDate
 
 
 class PastAndFuture(unittest.TestCase):
@@ -10,11 +10,9 @@ class PastAndFuture(unittest.TestCase):
     def test_setting_both(self):
         self.assertRaises(ValueError, ApproximateDate, past=True, future=True )
 
-
     def test_setting_with_dates(self):
         self.assertRaises(ValueError, ApproximateDate, future=True, year=2000 )
         self.assertRaises(ValueError, ApproximateDate, past=True,   year=2000 )
-
 
     def test_stringification(self):
 
@@ -124,8 +122,8 @@ class CompareDates(unittest.TestCase):
 class Lengths(unittest.TestCase):
     known_lengths = (
         ({ 'year':1999,                        }, 10 ),
-        ({ 'year':1999, 'month': 01,           }, 10 ),
-        ({ 'year':1999, 'month': 01, 'day': 01 }, 10 ),
+        ({ 'year':1999, 'month':  1,           }, 10 ),
+        ({ 'year':1999, 'month':  1, 'day':  1 }, 10 ),
         ({ 'future': True },                      6  ),
         ({ 'past': True },                        4  ),
     );
