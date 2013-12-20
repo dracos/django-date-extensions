@@ -1,6 +1,6 @@
 import time, re, datetime
 from datetime import date
-from widgets import PrettyDateInput
+from django_date_extensions.widgets import PrettyDateInput
 from django.db import models
 from django import forms
 from django.forms import ValidationError
@@ -100,12 +100,10 @@ class ApproximateDate(object):
 
 ansi_date_re = re.compile(r'^\d{4}-\d{1,2}-\d{1,2}$')
 
-class ApproximateDateField(models.CharField):
+class ApproximateDateField(models.CharField, metaclass=models.SubfieldBase):
     """A model field to store ApproximateDate objects in the database
        (as a CharField because MySQLdb intercepts dates from the
        database and forces them to be datetime.date()s."""
-    __metaclass__ = models.SubfieldBase
-
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 10
         super(ApproximateDateField, self).__init__(*args, **kwargs)
@@ -127,9 +125,9 @@ class ApproximateDateField(models.CharField):
         year, month, day = map(int, value.split('-'))
         try:
             return ApproximateDate(year, month, day)
-        except ValueError, e:
-            msg = _('Invalid date: %s') % _(str(e))
-            raise exceptions.ValidationError(msg)
+        except ValueError as e:
+            msg = 'Invalid date: %s' % str(e)
+            raise ValidationError(msg)
 
     # note - could rename to 'get_prep_value' but would break 1.1 compatability
     def get_db_prep_value(self, value, connection=None, prepared=False):

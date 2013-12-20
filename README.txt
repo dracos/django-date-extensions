@@ -1,3 +1,5 @@
+This Version runs on Django 1.6 and Python 3
+
 django-date-extensions
 by Matthew Somerville
 
