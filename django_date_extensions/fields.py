@@ -100,12 +100,10 @@ class ApproximateDate(object):
 
 ansi_date_re = re.compile(r'^\d{4}-\d{1,2}-\d{1,2}$')
 
-class ApproximateDateField(models.CharField):
+class ApproximateDateField(models.CharField, metaclass=models.SubfieldBase):
     """A model field to store ApproximateDate objects in the database
        (as a CharField because MySQLdb intercepts dates from the
        database and forces them to be datetime.date()s."""
-    __metaclass__ = models.SubfieldBase
-
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 10
         super(ApproximateDateField, self).__init__(*args, **kwargs)
