@@ -1,5 +1,5 @@
 from django.conf.urls import patterns
-from .app.views import view
+from .views import view
 
 urlpatterns = patterns('',
     (r'^$', view),
