@@ -9,6 +9,11 @@ from django.utils import dateformat
 
 from .widgets import PrettyDateInput
 
+try:
+    from south.modelsinspector import add_introspection_rules
+    add_introspection_rules([], ["^django_date_extensions\.fields\.ApproximateDateField"])
+except ImportError:
+    pass
 
 class ApproximateDate(object):
     """A date object that accepts 0 for month or day to mean we don't
