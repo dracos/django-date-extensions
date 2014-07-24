@@ -31,6 +31,25 @@ closest occurrence of that date in the past.
 If future is not set, then PrettyDateField acts the same as a DateField, only
 allows suffixes on ordinals, and assumes D/M/Y rather than M/D/Y. 
 
+
+South Integration
+=================
+In  version 0.7 and later  of South the parser module was removed which causes South not to be able to "freeze" models
+with custom fields (as this app provides).  To solve this problem add this code to your models.py file that uses this
+custom field.
+
+    from south.modelsinspector import add_introspection_rules
+     ...
+     add_introspection_rules([
+     (
+        [ApproximateDateField],
+        [],
+        {},
+    ),
+], ['^django_date_extensions\.fields\.ApproximateDateField'])
+
+
+
 Todo
 ====
 
