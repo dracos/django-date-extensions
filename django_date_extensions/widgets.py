@@ -1,8 +1,11 @@
 from datetime import date
+from django.conf import settings
 
 from django.utils import dateformat
 from django.forms import widgets
-from fields import OUTPUT_FORMAT_DAY_MONTH_YEAR
+
+OUTPUT_FORMAT_DAY_MONTH_YEAR = getattr(settings, 'DATE_EXTENSIONS_OUTPUT_FORMAT_DAY_MONTH_YEAR', "jS F Y")
+
 
 class PrettyDateInput(widgets.Input):
     input_type = 'text'
