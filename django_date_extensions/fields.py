@@ -175,7 +175,7 @@ DATE_INPUT_FORMATS = (
     '%d %B %Y', '%d %B, %Y',            # '25 October 2006', '25 October, 2006'
 )
 MONTH_INPUT_FORMATS = (
-    '%m/%Y',                         # '10/2006'
+    '%m/%Y', '%m-%Y',                # '10/2006', '10-2006'
     '%b %Y', '%Y %b',                # 'Oct 2006', '2006 Oct'
     '%B %Y', '%Y %B',                # 'October 2006', '2006 October'
 )
