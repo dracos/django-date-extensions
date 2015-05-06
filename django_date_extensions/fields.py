@@ -64,6 +64,10 @@ class ApproximateDate(object):
             return dateformat.format(self, settings.OUTPUT_FORMAT_YEAR)
 
     def __eq__(self, other):
+        if isinstance(other, (datetime.date, datetime.datetime)):
+            return (self.year, self.month, self.day) ==\
+                   (other.year, other.month, other.day)
+
         if not isinstance(other, ApproximateDate):
             return False
 
