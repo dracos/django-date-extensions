@@ -1,7 +1,6 @@
 import datetime
 import time
 import re
-from datetime import date
 from functools import total_ordering
 
 from six import with_metaclass
@@ -31,13 +30,13 @@ class ApproximateDate(object):
             if year or month or day:
                 raise ValueError("Future or past dates can have no year, month or day")
         elif year and month and day:
-            date(year, month, day)
+            datetime.date(year, month, day)
         elif year and month:
-            date(year, month, 1)
+            datetime.date(year, month, 1)
         elif year and day:
             raise ValueError("You cannot specify just a year and a day")
         elif year:
-            date(year, 1, 1)
+            datetime.date(year, 1, 1)
         else:
             raise ValueError("You must specify a year")
 
@@ -138,7 +137,7 @@ class ApproximateDateField(with_metaclass(models.SubfieldBase, models.CharField)
             return ''
         if isinstance(value, ApproximateDate):
             return repr(value)
-        if isinstance(value, date):
+        if isinstance(value, datetime.date):
             return dateformat.format(value, "Y-m-d")
         if value == 'future':
             return 'future'
