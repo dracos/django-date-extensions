@@ -1,5 +1,5 @@
 import time, re, datetime
-from datetime import date
+from functools import total_ordering
 
 from six import with_metaclass
 from django.db import models
@@ -15,6 +15,7 @@ try:
 except ImportError:
     pass
 
+@total_ordering
 class ApproximateDate(object):
     """A date object that accepts 0 for month or day to mean we don't
        know when it is within that month/year."""
@@ -26,13 +27,13 @@ class ApproximateDate(object):
             if year or month or day:
                 raise ValueError("Future or past dates can have no year, month or day")
         elif year and month and day:
-            d = date(year, month, day)
+            d = datetime.date(year, month, day)
         elif year and month:
-            d = date(year, month, 1)
+            d = datetime.date(year, month, 1)
         elif year and day:
             raise ValueError("You cannot specify just a year and a day")
         elif year:
-            d = date(year, 1, 1)
+            d = datetime.date(year, 1, 1)
         else:
             raise ValueError("You must specify a year")
 
@@ -65,14 +66,15 @@ class ApproximateDate(object):
             return dateformat.format(self, "Y")
 
     def __eq__(self, other):
-        if other is None:
-            return False
+        if isinstance(other, (datetime.date, datetime.datetime)):
+            return (self.year, self.month, self.day) ==\
+                   (other.year, other.month, other.day)
+
         if not isinstance(other, ApproximateDate):
             return False
-        elif (self.year, self.month, self.day, self.future, self.past) != (other.year, other.month, other.day, other.future, other.past):
-            return False
-        else:
-            return True
+
+        return (self.year, self.month, self.day, self.future, self.past) ==\
+               (other.year, other.month, other.day, other.future, other.past)
 
     def __ne__(self, other):
         return not (self == other)
@@ -80,30 +82,15 @@ class ApproximateDate(object):
     def __lt__(self, other):
         if other is None:
             return False
-        elif self.future or other.future:
-            if self.future: 
-                return False   # regardless of other.future it won't be less
-            else:
-                return True    # we were not in future so they are
-        elif self.past or other.past:
-            if other.past: 
-                return False   # regardless of self.past it won't be more
-            else:
-                return True    # we were not in past so they are
-        elif(self.year, self.month, self.day) < (other.year, other.month, other.day):
-            return True
-        else:
-            return False
 
-    def __le__(self, other):
-        return self < other or self == other
+        if isinstance(other, ApproximateDate):
+            if self.future or other.future:
+                return not self.future
+            if self.past or other.past:
+                return not other.past
 
-    def __gt__(self, other):
-        return not self <= other
+        return (self.year, self.month, self.day) < (other.year, other.month, other.day)
 
-    def __ge__(self, other):
-        return self > other or self == other
-    
     def __len__(self):
         return len( self.__repr__() )
 

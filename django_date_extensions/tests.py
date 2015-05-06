@@ -1,3 +1,4 @@
+from datetime import date, datetime
 import os
 os.environ['DJANGO_SETTINGS_MODULE'] = 'example.settings'
 import unittest
@@ -118,6 +119,14 @@ class CompareDates(unittest.TestCase):
         self.assertFalse( past   >  past       )
         self.assertTrue(  past   == past_too   )
         self.assertFalse( past   != past_too   )
+
+    def test_compare_date(self):
+        """
+        You can compare Aproximate date objects to regular date ones.
+        """
+        self.assertEqual(ApproximateDate(2008, 9, 3), date(2008, 9 , 3))
+        self.assertTrue(ApproximateDate(2008, 9, 3) < date(2009, 9, 3))
+        self.assertTrue(ApproximateDate(2007) < date(2007, 9, 3))
 
 class Lengths(unittest.TestCase):
     known_lengths = (
