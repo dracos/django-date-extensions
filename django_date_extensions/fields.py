@@ -1,5 +1,4 @@
 import time, re, datetime
-from datetime import date
 from functools import total_ordering
 
 from six import with_metaclass
@@ -28,13 +27,13 @@ class ApproximateDate(object):
             if year or month or day:
                 raise ValueError("Future or past dates can have no year, month or day")
         elif year and month and day:
-            d = date(year, month, day)
+            d = datetime.date(year, month, day)
         elif year and month:
-            d = date(year, month, 1)
+            d = datetime.date(year, month, 1)
         elif year and day:
             raise ValueError("You cannot specify just a year and a day")
         elif year:
-            d = date(year, 1, 1)
+            d = datetime.date(year, 1, 1)
         else:
             raise ValueError("You must specify a year")
 
