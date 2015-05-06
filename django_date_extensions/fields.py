@@ -1,5 +1,6 @@
 import time, re, datetime
 from datetime import date
+from functools import total_ordering
 
 from six import with_metaclass
 from django.db import models
@@ -15,6 +16,7 @@ try:
 except ImportError:
     pass
 
+@total_ordering
 class ApproximateDate(object):
     """A date object that accepts 0 for month or day to mean we don't
        know when it is within that month/year."""
@@ -95,15 +97,6 @@ class ApproximateDate(object):
         else:
             return False
 
-    def __le__(self, other):
-        return self < other or self == other
-
-    def __gt__(self, other):
-        return not self <= other
-
-    def __ge__(self, other):
-        return self > other or self == other
-    
     def __len__(self):
         return len( self.__repr__() )
 
