@@ -64,15 +64,11 @@ class ApproximateDate(object):
             return dateformat.format(self, settings.OUTPUT_FORMAT_YEAR)
 
     def __eq__(self, other):
-        if other is None:
-            return False
         if not isinstance(other, ApproximateDate):
             return False
-        elif (self.year, self.month, self.day, self.future, self.past) != \
-                (other.year, other.month, other.day, other.future, other.past):
-            return False
-        else:
-            return True
+
+        return (self.year, self.month, self.day, self.future, self.past) ==\
+               (other.year, other.month, other.day, other.future, other.past)
 
     def __ne__(self, other):
         return not (self == other)
@@ -80,20 +76,14 @@ class ApproximateDate(object):
     def __lt__(self, other):
         if other is None:
             return False
-        elif self.future or other.future:
-            if self.future:
-                return False  # regardless of other.future it won't be less
-            else:
-                return True  # we were not in future so they are
-        elif self.past or other.past:
-            if other.past:
-                return False  # regardless of self.past it won't be more
-            else:
-                return True  # we were not in past so they are
-        elif (self.year, self.month, self.day) < (other.year, other.month, other.day):
-            return True
-        else:
-            return False
+
+        if isinstance(other, ApproximateDate):
+            if self.future or other.future:
+                return not self.future
+            if self.past or other.past:
+                return not other.past
+
+        return (self.year, self.month, self.day) < (other.year, other.month, other.day)
 
     def __len__(self):
         return len(self.__repr__())
