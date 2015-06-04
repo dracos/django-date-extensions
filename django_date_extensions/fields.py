@@ -47,12 +47,7 @@ class ApproximateDate(object):
     def __repr__(self):
         if self.future or self.past:
             return str(self)
-        elif self.year and self.month and self.day:
-            return "%04d-%02d-%02d" % (self.year, self.month, self.day)
-        elif self.year and self.month:
-            return "%04d-%02d-00" % (self.year, self.month)
-        elif self.year:
-            return "%04d-00-00" % self.year
+        return "{year:04d}-{month:02d}-{day:02d}".format(year=self.year, month=self.month, day=self.day)
 
     def __str__(self):
         if self.future:
