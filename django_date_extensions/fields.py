@@ -1,4 +1,6 @@
-import time, re, datetime
+import datetime
+import time
+import re
 from datetime import date
 
 from six import with_metaclass
@@ -15,6 +17,7 @@ try:
 except ImportError:
     pass
 
+
 class ApproximateDate(object):
     """A date object that accepts 0 for month or day to mean we don't
        know when it is within that month/year."""
@@ -22,25 +25,24 @@ class ApproximateDate(object):
         if future and past:
             raise ValueError("Can't be both future and past")
         elif future or past:
-            d = None
             if year or month or day:
                 raise ValueError("Future or past dates can have no year, month or day")
         elif year and month and day:
-            d = date(year, month, day)
+            date(year, month, day)
         elif year and month:
-            d = date(year, month, 1)
+            date(year, month, 1)
         elif year and day:
             raise ValueError("You cannot specify just a year and a day")
         elif year:
-            d = date(year, 1, 1)
+            date(year, 1, 1)
         else:
             raise ValueError("You must specify a year")
 
         self.future = future
-        self.past   = past
-        self.year   = year
-        self.month  = month
-        self.day    = day
+        self.past = past
+        self.year = year
+        self.month = month
+        self.day = day
 
     def __repr__(self):
         if self.future or self.past:
@@ -69,7 +71,8 @@ class ApproximateDate(object):
             return False
         if not isinstance(other, ApproximateDate):
             return False
-        elif (self.year, self.month, self.day, self.future, self.past) != (other.year, other.month, other.day, other.future, other.past):
+        elif (self.year, self.month, self.day, self.future, self.past) != \
+                (other.year, other.month, other.day, other.future, other.past):
             return False
         else:
             return True
@@ -81,16 +84,16 @@ class ApproximateDate(object):
         if other is None:
             return False
         elif self.future or other.future:
-            if self.future: 
-                return False   # regardless of other.future it won't be less
+            if self.future:
+                return False  # regardless of other.future it won't be less
             else:
-                return True    # we were not in future so they are
+                return True  # we were not in future so they are
         elif self.past or other.past:
-            if other.past: 
-                return False   # regardless of self.past it won't be more
+            if other.past:
+                return False  # regardless of self.past it won't be more
             else:
-                return True    # we were not in past so they are
-        elif(self.year, self.month, self.day) < (other.year, other.month, other.day):
+                return True  # we were not in past so they are
+        elif (self.year, self.month, self.day) < (other.year, other.month, other.day):
             return True
         else:
             return False
@@ -103,11 +106,13 @@ class ApproximateDate(object):
 
     def __ge__(self, other):
         return self > other or self == other
-    
+
     def __len__(self):
-        return len( self.__repr__() )
+        return len(self.__repr__())
+
 
 ansi_date_re = re.compile(r'^\d{4}-\d{1,2}-\d{1,2}$')
+
 
 class ApproximateDateField(with_metaclass(models.SubfieldBase, models.CharField)):
     """A model field to store ApproximateDate objects in the database
@@ -159,29 +164,32 @@ class ApproximateDateField(with_metaclass(models.SubfieldBase, models.CharField)
         return self.get_db_prep_value(value)
 
     def formfield(self, **kwargs):
-        defaults = { 'form_class': ApproximateDateFormField }
+        defaults = {'form_class': ApproximateDateFormField}
         defaults.update(kwargs)
         return super(ApproximateDateField, self).formfield(**defaults)
 
 #    def get_db_prep_lookup(self, lookup_type, value):
 #        pass
 
+
 # The same as the built-in Django one, but with the d/m/y ones the right way round ;)
 DATE_INPUT_FORMATS = (
-    '%Y-%m-%d', '%d/%m/%Y', '%d/%m/%y', # '2006-10-25', '25/10/2006', '25/10/06'
-    '%b %d %Y', '%b %d, %Y',            # 'Oct 25 2006', 'Oct 25, 2006'
-    '%d %b %Y', '%d %b, %Y',            # '25 Oct 2006', '25 Oct, 2006'
-    '%B %d %Y', '%B %d, %Y',            # 'October 25 2006', 'October 25, 2006'
-    '%d %B %Y', '%d %B, %Y',            # '25 October 2006', '25 October, 2006'
+    '%Y-%m-%d',  # '2006-10-25',
+    '%d/%m/%Y', '%d/%m/%y',  # '25/10/2006', '25/10/06'
+    '%b %d %Y', '%b %d, %Y',  # 'Oct 25 2006', 'Oct 25, 2006'
+    '%d %b %Y', '%d %b, %Y',  # '25 Oct 2006', '25 Oct, 2006'
+    '%B %d %Y', '%B %d, %Y',  # 'October 25 2006', 'October 25, 2006'
+    '%d %B %Y', '%d %B, %Y',  # '25 October 2006', '25 October, 2006'
 )
 MONTH_INPUT_FORMATS = (
-    '%m/%Y',                         # '10/2006'
-    '%b %Y', '%Y %b',                # 'Oct 2006', '2006 Oct'
-    '%B %Y', '%Y %B',                # 'October 2006', '2006 October'
+    '%m/%Y',  # '10/2006'
+    '%b %Y', '%Y %b',  # 'Oct 2006', '2006 Oct'
+    '%B %Y', '%Y %B',  # 'October 2006', '2006 October'
 )
 YEAR_INPUT_FORMATS = (
-    '%Y',                               # '2006'
+    '%Y',  # '2006'
 )
+
 
 # TODO: Expand to work more like my PHP strtotime()-using function
 class ApproximateDateFormField(forms.fields.Field):
@@ -217,11 +225,13 @@ class ApproximateDateFormField(forms.fields.Field):
                 continue
         raise ValidationError('Please enter a valid date.')
 
+
 DAY_MONTH_INPUT_FORMATS = (
-    '%m-%d', '%d/%m', # '10-25', '25/10'
-    '%b %d', '%d %b', # 'Oct 25', '25 Oct'
-    '%B %d', '%d %B', # 'October 25', '25 October'
+    '%m-%d', '%d/%m',  # '10-25', '25/10'
+    '%b %d', '%d %b',  # 'Oct 25', '25 Oct'
+    '%B %d', '%d %B',  # 'October 25', '25 October'
 )
+
 
 # PrettyDateField - same as DateField but accepts slightly more input,
 # like ApproximateDateFormField above. If initialised with future=True,
@@ -229,7 +239,7 @@ DAY_MONTH_INPUT_FORMATS = (
 # year if the day is before the current date). If future=False, it does
 # the same but in the past.
 class PrettyDateField(forms.fields.Field):
-    widget = PrettyDateInput 
+    widget = PrettyDateInput
 
     def __init__(self, future=None, *args, **kwargs):
         self.future = future
@@ -276,4 +286,3 @@ class PrettyDateField(forms.fields.Field):
                 continue
 
         raise ValidationError('Please enter a valid date.')
-

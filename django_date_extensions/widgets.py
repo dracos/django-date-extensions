@@ -2,6 +2,7 @@ from datetime import date
 from django.utils import dateformat
 from django.forms import widgets
 
+
 class PrettyDateInput(widgets.Input):
     input_type = 'text'
 
@@ -11,4 +12,3 @@ class PrettyDateInput(widgets.Input):
         elif isinstance(value, date):
             value = dateformat.format(value, "jS F Y")
         return super(PrettyDateInput, self).render(name, value, attrs)
-
