@@ -9,6 +9,7 @@ from django import forms
 from django.forms import ValidationError
 from django.utils import dateformat
 
+from . import settings
 from .widgets import PrettyDateInput
 
 try:
@@ -55,11 +56,11 @@ class ApproximateDate(object):
         if self.past:
             return 'past'
         elif self.year and self.month and self.day:
-            return dateformat.format(self, "jS F Y")
+            return dateformat.format(self, settings.OUTPUT_FORMAT_DAY_MONTH_YEAR)
         elif self.year and self.month:
-            return dateformat.format(self, "F Y")
+            return dateformat.format(self, settings.OUTPUT_FORMAT_MONTH_YEAR)
         elif self.year:
-            return dateformat.format(self, "Y")
+            return dateformat.format(self, settings.OUTPUT_FORMAT_YEAR)
 
     def __eq__(self, other):
         if other is None:
@@ -167,25 +168,6 @@ class ApproximateDateField(with_metaclass(models.SubfieldBase, models.CharField)
 #        pass
 
 
-# The same as the built-in Django one, but with the d/m/y ones the right way round ;)
-DATE_INPUT_FORMATS = (
-    '%Y-%m-%d',  # '2006-10-25',
-    '%d/%m/%Y', '%d/%m/%y',  # '25/10/2006', '25/10/06'
-    '%b %d %Y', '%b %d, %Y',  # 'Oct 25 2006', 'Oct 25, 2006'
-    '%d %b %Y', '%d %b, %Y',  # '25 Oct 2006', '25 Oct, 2006'
-    '%B %d %Y', '%B %d, %Y',  # 'October 25 2006', 'October 25, 2006'
-    '%d %B %Y', '%d %B, %Y',  # '25 October 2006', '25 October, 2006'
-)
-MONTH_INPUT_FORMATS = (
-    '%m/%Y',  # '10/2006'
-    '%b %Y', '%Y %b',  # 'Oct 2006', '2006 Oct'
-    '%B %Y', '%Y %B',  # 'October 2006', '2006 October'
-)
-YEAR_INPUT_FORMATS = (
-    '%Y',  # '2006'
-)
-
-
 # TODO: Expand to work more like my PHP strtotime()-using function
 class ApproximateDateFormField(forms.fields.Field):
     def __init__(self, max_length=10, *args, **kwargs):
@@ -202,30 +184,23 @@ class ApproximateDateFormField(forms.fields.Field):
         if isinstance(value, ApproximateDate):
             return value
         value = re.sub('(?<=\d)(st|nd|rd|th)', '', value.strip())
-        for format in DATE_INPUT_FORMATS:
+        for format in settings.DATE_INPUT_FORMATS:
             try:
                 return ApproximateDate(*time.strptime(value, format)[:3])
             except ValueError:
                 continue
-        for format in MONTH_INPUT_FORMATS:
+        for format in settings.MONTH_INPUT_FORMATS:
             try:
                 match = time.strptime(value, format)
                 return ApproximateDate(match[0], match[1], 0)
             except ValueError:
                 continue
-        for format in YEAR_INPUT_FORMATS:
+        for format in settings.YEAR_INPUT_FORMATS:
             try:
                 return ApproximateDate(time.strptime(value, format)[0], 0, 0)
             except ValueError:
                 continue
         raise ValidationError('Please enter a valid date.')
-
-
-DAY_MONTH_INPUT_FORMATS = (
-    '%m-%d', '%d/%m',  # '10-25', '25/10'
-    '%b %d', '%d %b',  # 'Oct 25', '25 Oct'
-    '%B %d', '%d %B',  # 'October 25', '25 October'
-)
 
 
 # PrettyDateField - same as DateField but accepts slightly more input,
@@ -257,9 +232,9 @@ class PrettyDateField(forms.fields.Field):
         if isinstance(value, datetime.date):
             return value
         value = re.sub('(?<=\d)(st|nd|rd|th)', '', value.strip())
-        for format in DATE_INPUT_FORMATS:
+        for date_input_format in settings.DATE_INPUT_FORMATS:
             try:
-                return datetime.date(*time.strptime(value, format)[:3])
+                return datetime.date(*time.strptime(value, date_input_format)[:3])
             except ValueError:
                 continue
 
@@ -267,9 +242,9 @@ class PrettyDateField(forms.fields.Field):
             raise ValidationError('Please enter a valid date.')
 
         # Allow year to be omitted. Do the sensible thing, either past or future.
-        for format in DAY_MONTH_INPUT_FORMATS:
+        for day_month_input_format in settings.DAY_MONTH_INPUT_FORMATS:
             try:
-                t = time.strptime(value, format)
+                t = time.strptime(value, day_month_input_format)
                 month, day, yday = t[1], t[2], t[7]
                 year = datetime.date.today().year
                 if self.future and yday < int(datetime.date.today().strftime('%j')):
