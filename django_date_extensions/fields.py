@@ -3,7 +3,7 @@ import time
 import re
 from functools import total_ordering
 
-from six import with_metaclass
+from django.utils.six import with_metaclass
 from django.db import models
 from django import forms
 from django.forms import ValidationError
