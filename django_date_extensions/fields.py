@@ -115,10 +115,14 @@ class ApproximateDateField(with_metaclass(models.SubfieldBase, models.CharField)
         if value == 'past':
             return ApproximateDate(past=True)
 
-        if not ansi_date_re.search(value):
-            raise ValidationError('Enter a valid date in YYYY-MM-DD format.')
+        if isinstance(value, (datetime.date, datetime.datetime)):
+            year, month, day = value.year, value.month, value.day
+        else:
+            if not ansi_date_re.search(value):
+                raise ValidationError('Enter a valid date in YYYY-MM-DD format.')
 
-        year, month, day = map(int, value.split('-'))
+            year, month, day = map(int, value.split('-'))
+
         try:
             return ApproximateDate(year, month, day)
         except ValueError as e:
@@ -131,7 +135,7 @@ class ApproximateDateField(with_metaclass(models.SubfieldBase, models.CharField)
             return ''
         if isinstance(value, ApproximateDate):
             return repr(value)
-        if isinstance(value, datetime.date):
+        if isinstance(value, (datetime.date, datetime.datetime)):
             return dateformat.format(value, "Y-m-d")
         if value == 'future':
             return 'future'
@@ -170,20 +174,20 @@ class ApproximateDateFormField(forms.fields.Field):
         if isinstance(value, ApproximateDate):
             return value
         value = re.sub('(?<=\d)(st|nd|rd|th)', '', value.strip())
-        for format in settings.DATE_INPUT_FORMATS:
+        for date_format in settings.DATE_INPUT_FORMATS:
             try:
-                return ApproximateDate(*time.strptime(value, format)[:3])
+                return ApproximateDate(*time.strptime(value, date_format)[:3])
             except ValueError:
                 continue
-        for format in settings.MONTH_INPUT_FORMATS:
+        for month_format in settings.MONTH_INPUT_FORMATS:
             try:
-                match = time.strptime(value, format)
+                match = time.strptime(value, month_format)
                 return ApproximateDate(match[0], match[1], 0)
             except ValueError:
                 continue
-        for format in settings.YEAR_INPUT_FORMATS:
+        for year_format in settings.YEAR_INPUT_FORMATS:
             try:
-                return ApproximateDate(time.strptime(value, format)[0], 0, 0)
+                return ApproximateDate(time.strptime(value, year_format)[0], 0, 0)
             except ValueError:
                 continue
         raise ValidationError('Please enter a valid date.')

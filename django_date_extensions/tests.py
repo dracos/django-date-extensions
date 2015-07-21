@@ -1,9 +1,18 @@
-from datetime import date
+from datetime import date, datetime
 import os
 os.environ['DJANGO_SETTINGS_MODULE'] = 'example.settings'
 import unittest
 
-from .fields import ApproximateDate
+from django.db import models
+
+from .fields import ApproximateDate, ApproximateDateField
+
+
+class ApproxDateModel(models.Model):
+    start = ApproximateDateField()
+
+    def __unicode__(self):
+        return u'%s' % str(self.start)
 
 
 class PastAndFuture(unittest.TestCase):
@@ -139,6 +148,24 @@ class Lengths(unittest.TestCase):
         for kwargs, length in self.known_lengths:
             approx = ApproximateDate(**kwargs)
             self.assertEqual(len(approx), length)
+
+
+class ApproxDateFiltering(unittest.TestCase):
+
+    def setUp(self):
+        for year in [2000, 2001, 2002, 2003, 2004]:
+            ApproxDateModel.objects.create(start=ApproximateDate(year=year))
+
+    def test_filtering_with_python_date(self):
+        qs = ApproxDateModel.objects.filter(start__gt=date.today())
+        # force evaluate queryset
+        list(qs)
+
+    def test_filtering_with_python_datetime(self):
+        qs = ApproxDateModel.objects.filter(start__gt=datetime.now())
+        # force evaluate queryset
+        list(qs)
+
 
 if __name__ == "__main__":
     unittest.main()
