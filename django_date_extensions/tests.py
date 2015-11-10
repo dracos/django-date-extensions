@@ -4,8 +4,9 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'example.settings'
 import unittest
 
 from django.db import models
+from django import forms
 
-from .fields import ApproximateDate, ApproximateDateField
+from .fields import ApproximateDate, ApproximateDateField, ApproximateDateFormField
 from . import settings
 
 settings.ALLOWED_PREFIX = ['about', 'abouts']
@@ -16,6 +17,10 @@ class ApproxDateModel(models.Model):
 
     def __unicode__(self):
         return u'%s' % str(self.start)
+
+
+class ApproxDateForm(forms.Form):
+    start = ApproximateDateFormField()
 
 
 class PastAndFuture(unittest.TestCase):
@@ -207,6 +212,12 @@ class PrefixDates(unittest.TestCase):
 
     def test_not_allowed_prefix(self):
         self.assertRaises(ValueError, ApproximateDate, prefix='what', year=2015)
+
+    def test_date_with_prefix_form(self):
+        form = ApproxDateForm({'start': 'about 2015'})
+        self.assertTrue(form.is_valid())
+        form = ApproxDateForm({'start': '2015'})
+        self.assertTrue(form.is_valid())
 
 
 if __name__ == "__main__":

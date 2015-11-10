@@ -212,7 +212,7 @@ class ApproximateDateFormField(forms.fields.Field):
                 continue
 
         prefix = None
-        match = prefix_date_re.search(value)
+        match = prefix_date_re.search(value.replace(' ', '-'))
         if match:
             prefix = match.group(1)
             value = match.group(2)
