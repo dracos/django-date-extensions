@@ -199,7 +199,7 @@ class PrefixDates(unittest.TestCase):
         self.assertRaises(ValueError, ApproximateDate, prefix='about', year=2015, month=12)
 
     def test_stringification(self):
-        self.assertEqual(str(ApproximateDate(year=2010, prefix='about')), 'about-2010')
+        self.assertEqual(str(ApproximateDate(year=2010, prefix='about')), 'about 2010')
         self.assertEqual(str(ApproximateDate(year=2010)), '2010')
 
     def test_db(self):

@@ -75,7 +75,7 @@ class ApproximateDate(object):
         elif self.year and self.month:
             return dateformat.format(self, settings.OUTPUT_FORMAT_MONTH_YEAR)
         elif self.year and self.prefix:
-            return '{0}-{1}'.format(self.prefix, dateformat.format(self, settings.OUTPUT_FORMAT_YEAR))
+            return '{0} {1}'.format(self.prefix, dateformat.format(self, settings.OUTPUT_FORMAT_YEAR))
         elif self.year:
             return dateformat.format(self, settings.OUTPUT_FORMAT_YEAR)
 
@@ -110,7 +110,7 @@ class ApproximateDate(object):
 
 
 ansi_date_re = re.compile(r'^\d{4}-\d{1,2}-\d{1,2}$')
-prefix_date_re = re.compile(r'^([a-zA-Z]+)-(\d{4})$')
+prefix_date_re = re.compile(r'^([a-zA-Z]+) (\d{4})$')
 
 
 class ApproximateDateField(with_metaclass(models.SubfieldBase, models.CharField)):
@@ -143,7 +143,7 @@ class ApproximateDateField(with_metaclass(models.SubfieldBase, models.CharField)
                 raise ValidationError('Enter a valid date in YYYY-MM-DD format.')
 
             if prefix_date:
-                prefix, year = value.split('-')
+                prefix, year = value.split(' ')
                 year, month, day = map(int, [year, 0, 0])
             else:
                 year, month, day = map(int, value.split('-'))
@@ -212,7 +212,7 @@ class ApproximateDateFormField(forms.fields.Field):
                 continue
 
         prefix = None
-        match = prefix_date_re.search(value.replace(' ', '-'))
+        match = prefix_date_re.search(value)
         if match:
             prefix = match.group(1)
             value = match.group(2)
