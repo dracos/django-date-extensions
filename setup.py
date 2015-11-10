@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='django_date_extensions',
-    version='1.1.0',
+    version='1.1.1',
     url='https://github.com/dracos/django-date-extensions',
     packages=['django_date_extensions',],
     license='BSD',
