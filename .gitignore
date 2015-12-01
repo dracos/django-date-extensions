@@ -1,5 +1,6 @@
 *.pyc
 .venv
+.idea
 /MANIFEST
 /dist
 atlassian-ide-plugin.xml
