@@ -218,7 +218,15 @@ class PrefixDates(unittest.TestCase):
         self.assertTrue(form.is_valid())
         form = ApproxDateForm({'start': '2015'})
         self.assertTrue(form.is_valid())
-
+    
+    def test_ordering(self):
+        ApproxDateModel.objects.all().delete()
+        years = [2015, 2006, 2013, 2004, 2003, 1989]
+        for year in years:
+            ApproxDateModel.objects.create(start=ApproximateDate(year=year, prefix='about'))
+        self.assertEqual(sorted(years), [o.start.year for o in ApproxDateModel.objects.all().order_by('start')])
+        self.assertEqual(sorted(years, reverse=True), [o.start.year for o in ApproxDateModel.objects.all().order_by('-start')])
+        
 
 if __name__ == "__main__":
     unittest.main()

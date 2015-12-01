@@ -111,6 +111,7 @@ class ApproximateDate(object):
 
 ansi_date_re = re.compile(r'^\d{4}-\d{1,2}-\d{1,2}$')
 prefix_date_re = re.compile(r'^([a-zA-Z]+) (\d{4})$')
+prefix_date_reverse_re = re.compile(r'^(\d{4}) ([a-zA-Z]+)$')
 
 
 class ApproximateDateField(with_metaclass(models.SubfieldBase, models.CharField)):
@@ -138,12 +139,16 @@ class ApproximateDateField(with_metaclass(models.SubfieldBase, models.CharField)
             year, month, day = value.year, value.month, value.day
         else:
             prefix_date = prefix_date_re.search(value)
+            prefix_date_reverse = prefix_date_reverse_re.search(value)
             ansi_date = ansi_date_re.search(value)
-            if not prefix_date and not ansi_date:
+            if not prefix_date and not ansi_date and not prefix_date_reverse:
                 raise ValidationError('Enter a valid date in YYYY-MM-DD format.')
 
             if prefix_date:
                 prefix, year = value.split(' ')
+                year, month, day = map(int, [year, 0, 0])
+            elif prefix_date_reverse:
+                year, prefix = value.split(' ')
                 year, month, day = map(int, [year, 0, 0])
             else:
                 year, month, day = map(int, value.split('-'))
@@ -159,6 +164,8 @@ class ApproximateDateField(with_metaclass(models.SubfieldBase, models.CharField)
         if value in (None, ''):
             return ''
         if isinstance(value, ApproximateDate):
+            if value.prefix:
+                return '{0} {1}'.format(value.year, value.prefix)
             return repr(value)
         if isinstance(value, (datetime.date, datetime.datetime)):
             return dateformat.format(value, "Y-m-d")
@@ -166,8 +173,13 @@ class ApproximateDateField(with_metaclass(models.SubfieldBase, models.CharField)
             return 'future'
         if value == 'past':
             return 'past'
-        if not ansi_date_re.search(value) and not prefix_date_re.search(value):
+            
+        ansi_match = ansi_date_re.search(value)
+        prefix_match = prefix_date_re.search(value)
+        if not ansi_match and not prefix_match:
             raise ValidationError('Enter a valid date in YYYY-MM-DD format.')
+        if prefix_match:
+            value = '{0} {1}'.format(prefix_match.group(2), prefix_match.group(1))
         return value
 
     def value_to_string(self, obj):
