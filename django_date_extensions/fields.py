@@ -174,12 +174,13 @@ class ApproximateDateField(with_metaclass(models.SubfieldBase, models.CharField)
         if value == 'past':
             return 'past'
             
-        ansi_match = ansi_date_re.search(value)
-        prefix_match = prefix_date_re.search(value)
-        if not ansi_match and not prefix_match:
+        prefix_date = prefix_date_re.search(value)
+        prefix_date_reverse = prefix_date_reverse_re.search(value)
+        ansi_date = ansi_date_re.search(value)
+        if not prefix_date and not prefix_date_reverse and not ansi_date:
             raise ValidationError('Enter a valid date in YYYY-MM-DD format.')
-        if prefix_match:
-            value = '{0} {1}'.format(prefix_match.group(2), prefix_match.group(1))
+        if prefix_date_reverse:
+            value = '{0} {1}'.format(prefix_date_reverse.group(2), prefix_date_reverse.group(1))
         return value
 
     def value_to_string(self, obj):
