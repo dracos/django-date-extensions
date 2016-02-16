@@ -17,3 +17,4 @@ DATABASES = {
     }
 }
 
+MIDDLEWARE_CLASSES = []
