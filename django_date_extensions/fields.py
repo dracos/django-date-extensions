@@ -1,10 +1,10 @@
 import time, re, datetime
 from datetime import date
-from widgets import PrettyDateInput
+from .widgets import PrettyDateInput
 from django.db import models
 from django import forms
 from django.forms import ValidationError
-from django.utils import dateformat
+from django.utils import dateformat, six
 
 class ApproximateDate(object):
     """A date object that accepts 0 for month or day to mean we don't
@@ -100,11 +100,10 @@ class ApproximateDate(object):
 
 ansi_date_re = re.compile(r'^\d{4}-\d{1,2}-\d{1,2}$')
 
-class ApproximateDateField(models.CharField):
+class ApproximateDateField(six.with_metaclass(models.SubfieldBase, models.CharField)):
     """A model field to store ApproximateDate objects in the database
        (as a CharField because MySQLdb intercepts dates from the
        database and forces them to be datetime.date()s."""
-    __metaclass__ = models.SubfieldBase
 
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 10
@@ -127,7 +126,7 @@ class ApproximateDateField(models.CharField):
         year, month, day = map(int, value.split('-'))
         try:
             return ApproximateDate(year, month, day)
-        except ValueError, e:
+        except ValueError as e:
             msg = _('Invalid date: %s') % _(str(e))
             raise exceptions.ValidationError(msg)
 

@@ -1,5 +1,5 @@
 from django.shortcuts import render_to_response
-from forms import DatesForm
+from .forms import DatesForm
 
 def view(request):
     dates_form = DatesForm(request.GET or None)       

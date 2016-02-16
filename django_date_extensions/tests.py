@@ -1,7 +1,9 @@
+from __future__ import unicode_literals
+
 import os
 os.environ['DJANGO_SETTINGS_MODULE'] = 'example.settings'
 
-from fields import ApproximateDate
+from .fields import ApproximateDate
 import unittest
 
 
@@ -37,7 +39,7 @@ class CompareDates(unittest.TestCase):
         future_too = ApproximateDate( future=True )
 
         # check that we can be compared to None, '' and u''
-        for bad_val in ( '', u'', None ):
+        for bad_val in ( b'', '', None ):
             self.assertFalse( y_past in ( bad_val, ) )
             self.assertFalse( y_past == bad_val      )
             self.assertTrue(  y_past != bad_val      )
@@ -123,11 +125,11 @@ class CompareDates(unittest.TestCase):
 
 class Lengths(unittest.TestCase):
     known_lengths = (
-        ({ 'year':1999,                        }, 10 ),
-        ({ 'year':1999, 'month': 01,           }, 10 ),
-        ({ 'year':1999, 'month': 01, 'day': 01 }, 10 ),
-        ({ 'future': True },                      6  ),
-        ({ 'past': True },                        4  ),
+        ({ 'year':1999,                      }, 10 ),
+        ({ 'year':1999, 'month': 1,          }, 10 ),
+        ({ 'year':1999, 'month': 1, 'day': 1 }, 10 ),
+        ({ 'future': True },                    6  ),
+        ({ 'past': True },                      4  ),
     );
     
     def test_length(self):
