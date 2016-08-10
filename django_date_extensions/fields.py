@@ -3,7 +3,6 @@ import time
 import re
 from functools import total_ordering
 
-from django.utils.six import with_metaclass
 from django.db import models
 from django import forms
 from django.forms import ValidationError
@@ -96,7 +95,7 @@ class ApproximateDate(object):
 ansi_date_re = re.compile(r'^\d{4}-\d{1,2}-\d{1,2}$')
 
 
-class ApproximateDateField(with_metaclass(models.SubfieldBase, models.CharField)):
+class ApproximateDateField(models.CharField):
     """A model field to store ApproximateDate objects in the database
        (as a CharField because MySQLdb intercepts dates from the
        database and forces them to be datetime.date()s."""
@@ -124,6 +123,9 @@ class ApproximateDateField(with_metaclass(models.SubfieldBase, models.CharField)
         except ValueError as e:
             msg = 'Invalid date: %s' % str(e)
             raise ValidationError(msg)
+
+    def from_db_value(self, value, expression=None, connection=None, context=None):
+        return self.to_python(value)
 
     # note - could rename to 'get_prep_value' but would break 1.1 compatability
     def get_db_prep_value(self, value, connection=None, prepared=False):
