@@ -1,6 +1,6 @@
 *.pyc
-.venv
 /MANIFEST
 /dist
-atlassian-ide-plugin.xml
-example/django_date_extensions
+/build
+/django_date_extensions.egg-info/
+/.tox
