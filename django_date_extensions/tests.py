@@ -1,9 +1,9 @@
 from datetime import date
 import os
-os.environ['DJANGO_SETTINGS_MODULE'] = 'example.settings'
 import unittest
-
 from .fields import ApproximateDate
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'example.settings'
 
 
 class PastAndFuture(unittest.TestCase):

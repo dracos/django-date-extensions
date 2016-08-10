@@ -31,6 +31,10 @@ closest occurrence of that date in the past.
 If future is not set, then PrettyDateField acts the same as a DateField, only
 allows suffixes on ordinals, and assumes D/M/Y rather than M/D/Y. 
 
+Testing
+=======
+Run 'tox' with tox installed.
+
 Todo
 ====
 
