@@ -33,3 +33,8 @@ DAY_MONTH_INPUT_FORMATS = getattr(settings, 'DATE_EXTENSIONS_DAY_MONTH_INPUT_FOR
 ))
 
 ALLOWED_PREFIX = [p.lower() for p in getattr(settings, 'DATE_EXTENSIONS_ALLOWED_PREFIX', [])]
+
+# formats such as unknown, N/A (in-case sensitive)
+STRING_FORMATS = getattr(settings, 'DATE_EXTENSIONS_STRING_FORMATS', [])
+# if False str on ApproximateDate will return empty string ''
+DISPLAY_STRING_FORMATS = getattr(settings, 'DATE_EXTENSIONS_DISPLAY_STRING_FORMATS', True)
