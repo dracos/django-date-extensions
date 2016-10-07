@@ -1,15 +1,17 @@
 from datetime import date, datetime
 import os
 os.environ['DJANGO_SETTINGS_MODULE'] = 'example.settings'
-import unittest
 
+from django.test import TestCase
 from django.db import models
 from django import forms
 
-from .fields import ApproximateDate, ApproximateDateField, ApproximateDateFormField
 from . import settings
 
 settings.ALLOWED_PREFIX = ['about', 'abouts']
+settings.STRING_FORMATS = ['unknown']
+
+from .fields import ApproximateDate, ApproximateDateField, ApproximateDateFormField
 
 
 class ApproxDateModel(models.Model):
@@ -23,7 +25,7 @@ class ApproxDateForm(forms.Form):
     start = ApproximateDateFormField()
 
 
-class PastAndFuture(unittest.TestCase):
+class PastAndFuture(TestCase):
 
     def test_setting_both(self):
         self.assertRaises(ValueError, ApproximateDate, past=True, future=True)
@@ -41,9 +43,8 @@ class PastAndFuture(unittest.TestCase):
         self.assertEqual(repr(ApproximateDate(past=True)), 'past')
 
 
-class CompareDates(unittest.TestCase):
+class CompareDates(TestCase):
     def test_compare(self):
-
         past = ApproximateDate(past=True)
         past_too = ApproximateDate(past=True)
         y_past = ApproximateDate(year=2000)
@@ -51,6 +52,7 @@ class CompareDates(unittest.TestCase):
         future = ApproximateDate(future=True)
         future_too = ApproximateDate(future=True)
         prefix_dt = ApproximateDate(prefix='about', year=2010)
+        str_dt = ApproximateDate(string_format='unknown')
 
         # check that we can be compared to None, '' and u''
         for bad_val in ('', u'', None):
@@ -62,10 +64,12 @@ class CompareDates(unittest.TestCase):
         self.assertTrue(y_past == y_past)
         self.assertTrue(y_future == y_future)
         self.assertTrue(prefix_dt == prefix_dt)
+        self.assertTrue(str_dt == str_dt)
 
         self.assertFalse(y_past != y_past)
         self.assertFalse(y_future != y_future)
         self.assertFalse(prefix_dt != prefix_dt)
+        self.assertFalse(str_dt != str_dt)
 
         self.assertTrue(y_past != y_future)
         self.assertTrue(y_future != y_past)
@@ -76,6 +80,8 @@ class CompareDates(unittest.TestCase):
         self.assertFalse(y_past >= y_future)
         self.assertFalse(prefix_dt > prefix_dt)
         self.assertTrue(prefix_dt >= prefix_dt)
+        self.assertFalse(str_dt > str_dt)
+        self.assertTrue(str_dt >= str_dt)
 
         self.assertTrue(y_past < y_future)
         self.assertTrue(y_past <= y_future)
@@ -83,6 +89,8 @@ class CompareDates(unittest.TestCase):
         self.assertFalse(y_future <= y_past)
         self.assertFalse(prefix_dt < prefix_dt)
         self.assertTrue(prefix_dt <= prefix_dt)
+        self.assertFalse(str_dt < str_dt)
+        self.assertTrue(str_dt <= str_dt)
 
         # Future dates are always greater
         self.assertTrue(y_past < future)
@@ -149,7 +157,7 @@ class CompareDates(unittest.TestCase):
         self.assertTrue(ApproximateDate(2007) < date(2007, 9, 3))
 
 
-class Lengths(unittest.TestCase):
+class Lengths(TestCase):
     known_lengths = (
         ({'year': 1999}, 10),
         ({'year': 1999, 'month': 1}, 10),
@@ -164,7 +172,7 @@ class Lengths(unittest.TestCase):
             self.assertEqual(len(approx), length)
 
 
-class ApproxDateFiltering(unittest.TestCase):
+class ApproxDateFiltering(TestCase):
 
     def setUp(self):
         for year in [2000, 2001, 2002, 2003, 2004]:
@@ -188,7 +196,7 @@ class ApproxDateFiltering(unittest.TestCase):
         self.assertEqual(ApproxDateModel.objects.filter(start=ApproximateDate(year=2004, prefix='about')).count(), 1)
 
 
-class PrefixDates(unittest.TestCase):
+class PrefixDates(TestCase):
     def test_with_year_month_day(self):
         self.assertRaises(ValueError, ApproximateDate, prefix='about', year=2015, month=12, day=1)
 
@@ -197,6 +205,9 @@ class PrefixDates(unittest.TestCase):
 
     def test_with_year(self):
         self.assertRaises(ValueError, ApproximateDate, prefix='about', year=2015, month=12)
+
+    def test_with_string_format(self):
+        self.assertRaises(ValueError, ApproximateDate, prefix='about', year=2015, string_format='unknown')
 
     def test_stringification(self):
         self.assertEqual(str(ApproximateDate(year=2010, prefix='about')), 'about 2010')
@@ -226,7 +237,69 @@ class PrefixDates(unittest.TestCase):
             ApproxDateModel.objects.create(start=ApproximateDate(year=year, prefix='about'))
         self.assertEqual(sorted(years), [o.start.year for o in ApproxDateModel.objects.all().order_by('start')])
         self.assertEqual(sorted(years, reverse=True), [o.start.year for o in ApproxDateModel.objects.all().order_by('-start')])
-        
 
-if __name__ == "__main__":
-    unittest.main()
+
+class StringFormatsDates(TestCase):
+    def setUp(self):
+        settings.DISPLAY_STRING_FORMATS = True
+
+    def test_compare(self):
+        str_dt = ApproximateDate(string_format='unknown')
+
+        # sanity check
+        self.assertTrue(str_dt == str_dt)
+
+        self.assertFalse(str_dt != str_dt)
+
+        self.assertFalse(str_dt > str_dt)
+        self.assertTrue(str_dt >= str_dt)
+
+        self.assertFalse(str_dt < str_dt)
+        self.assertTrue(str_dt <= str_dt)
+
+    def test_with_valid_dates(self):
+        st_dt = 'unknown'
+        self.assertRaises(ValueError, ApproximateDate, year=2000, month=1, day=1, string_format=st_dt)
+        self.assertRaises(ValueError, ApproximateDate, year=2000, month=1, string_format=st_dt)
+        self.assertRaises(ValueError, ApproximateDate, prefix='about', year=2000, string_format=st_dt)
+        self.assertRaises(ValueError, ApproximateDate, year=2000, string_format=st_dt)
+        self.assertRaises(ValueError, ApproximateDate, future=True, string_format=st_dt)
+        self.assertRaises(ValueError, ApproximateDate, past=True, string_format=st_dt)
+
+    def test_invalid(self):
+        self.assertRaises(ValueError, ApproximateDate, string_format='garbage')
+
+    def test_valid(self):
+        ApproximateDate(string_format='unknown')
+        ApproximateDate(string_format='Unknown')  # incase sensitive
+
+    def test_stringification(self):
+        self.assertEqual(str(ApproximateDate(string_format='unknown')), 'unknown')
+
+    def test_db(self):
+        obj = ApproxDateModel.objects.create(start=ApproximateDate(string_format='unknown'))
+        self.assertEqual(obj.start, ApproximateDate(string_format='unknown'))
+
+    def test_display_visible(self):
+        obj = ApproxDateModel.objects.create(start=ApproximateDate(string_format='unknown'))
+        self.assertEqual(obj.start, ApproximateDate(string_format='unknown'))
+        self.assertEqual(str(obj.start), 'unknown')
+
+    def test_date_with_string_format_form(self):
+        form = ApproxDateForm({'start': 'unknown'})
+        self.assertTrue(form.is_valid())
+        form = ApproxDateForm({'start': 'garbage'})
+        self.assertFalse(form.is_valid())
+
+    def test_filtering_with_string_format(self):
+        ApproxDateModel.objects.create(start=ApproximateDate(string_format='unknown'))
+        self.assertEqual(ApproxDateModel.objects.filter(start=ApproximateDate(string_format='unknown')).count(), 1)
+
+
+class StringFormatsDatesB(TestCase):
+    def setUp(self):
+        settings.DISPLAY_STRING_FORMATS = False
+
+    def test_display_not_visible(self):
+        obj = ApproxDateModel.objects.create(start=ApproximateDate(string_format='unknown'))
+        self.assertEqual(str(obj.start), '')
