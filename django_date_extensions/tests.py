@@ -1,9 +1,19 @@
-from datetime import date
+from datetime import date, datetime
 import os
 import unittest
-from .fields import ApproximateDate
+
+from django.db import models
+
+from .fields import ApproximateDate, ApproximateDateField
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'example.settings'
+
+
+class ApproxDateModel(models.Model):
+    start = ApproximateDateField()
+
+    def __unicode__(self):
+        return u'%s' % str(self.start)
 
 
 class PastAndFuture(unittest.TestCase):
@@ -119,7 +129,7 @@ class CompareDates(unittest.TestCase):
 
     def test_compare_date(self):
         """
-        You can compare Aproximate date objects to regular date ones.
+        You can compare Approximate date objects to regular date ones.
         """
         self.assertEqual(ApproximateDate(2008, 9, 3), date(2008, 9, 3))
         self.assertTrue(ApproximateDate(2008, 9, 3) < date(2009, 9, 3))
@@ -139,6 +149,38 @@ class Lengths(unittest.TestCase):
         for kwargs, length in self.known_lengths:
             approx = ApproximateDate(**kwargs)
             self.assertEqual(len(approx), length)
+
+
+class ApproxDateFiltering(unittest.TestCase):
+    def setUp(self):
+        for year in [2000, 2001, 2002, 2003, 2004]:
+            ApproxDateModel.objects.create(start=ApproximateDate(year=year))
+
+    def test_filtering_with_python_date(self):
+        qs = ApproxDateModel.objects.filter(start__gt=date.today())
+        # force evaluate queryset
+        list(qs)
+
+    def test_filtering_with_python_datetime(self):
+        qs = ApproxDateModel.objects.filter(start__gt=datetime.now())
+        # force evaluate queryset
+        list(qs)
+
+
+class ApproximateDateFieldTesting(unittest.TestCase):
+    def test_deconstruction(self):
+        f = ApproximateDateField()
+        name, path, args, kwargs = f.deconstruct()
+        new_instance = ApproximateDateField(*args, **kwargs)
+        self.assertEqual(f.max_length, new_instance.max_length)
+
+    def test_empty_fields(self):
+        a1 = ApproxDateModel.objects.create(start="")
+        self.assertEqual(0, ApproxDateModel.objects.filter(start=None).count())
+        self.assertEqual(1, ApproxDateModel.objects.filter(start=a1.start).count())
+        self.assertEqual(1, ApproxDateModel.objects.filter(start="").count())
+        self.assertEqual(1, ApproxDateModel.objects.filter(start=a1.start or "").count())
+
 
 if __name__ == "__main__":
     unittest.main()

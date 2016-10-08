@@ -11,12 +11,6 @@ from django.utils import dateformat
 from . import settings
 from .widgets import PrettyDateInput
 
-try:
-    from south.modelsinspector import add_introspection_rules
-    add_introspection_rules([], ["^django_date_extensions\.fields\.ApproximateDateField"])
-except ImportError:
-    pass
-
 
 @total_ordering
 class ApproximateDate(object):
@@ -99,15 +93,27 @@ class ApproximateDateField(models.CharField):
     """A model field to store ApproximateDate objects in the database
        (as a CharField because MySQLdb intercepts dates from the
        database and forces them to be datetime.date()s."""
+
+    description = "An approximate date"
+
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 10
         super(ApproximateDateField, self).__init__(*args, **kwargs)
 
+    def deconstruct(self):
+        name, path, args, kwargs = super(ApproximateDateField, self).deconstruct()
+        del kwargs['max_length']
+        return name, path, args, kwargs
+
     def to_python(self, value):
-        if value in (None, ''):
-            return None
         if isinstance(value, ApproximateDate):
             return value
+
+        return self.from_db_value(value)
+
+    def from_db_value(self, value, expression=None, connection=None, context=None):
+        if value in (None, ''):
+            return ''
 
         if value == 'future':
             return ApproximateDate(future=True)
@@ -124,11 +130,7 @@ class ApproximateDateField(models.CharField):
             msg = 'Invalid date: %s' % str(e)
             raise ValidationError(msg)
 
-    def from_db_value(self, value, expression=None, connection=None, context=None):
-        return self.to_python(value)
-
-    # note - could rename to 'get_prep_value' but would break 1.1 compatability
-    def get_db_prep_value(self, value, connection=None, prepared=False):
+    def get_prep_value(self, value):
         if value in (None, ''):
             return ''
         if isinstance(value, ApproximateDate):
@@ -145,7 +147,7 @@ class ApproximateDateField(models.CharField):
 
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)
-        return self.get_db_prep_value(value)
+        return self.get_prep_value(value)
 
     def formfield(self, **kwargs):
         defaults = {'form_class': ApproximateDateFormField}
