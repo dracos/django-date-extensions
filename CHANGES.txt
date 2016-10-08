@@ -1,0 +1,28 @@
+Version 2.0
+
+This includes updates to work with Django 1.10, and bring the custom field code
+more in line with a modern setup. This has the side effect of working filtering
+by python date or datetime.
+
+I've done a major version bump as the ApproximateDateField instance will now
+return "" rather than None for an empty date, which is much more preferable
+because you always had to query empty dates using "", not None. Unlikely to
+break anything, given this behaviour was basically buggy, but seemed safest.
+
+I've also added better testing via tox, and fixed any flake8 issues.
+
+Thanks to John Lehmann and Aamir Adnan for reporting/tests.
+
+
+Version 1.1
+
+This version adds support for comparing ApproximateDate & date/datetime, and
+factors out settings to enable them to be overridden.
+
+Thanks to Baptiste Mispelon and jellevandehaterd for their contributions.
+
+
+Version 1.0
+
+First release. Thanks to Edmund von der Burg, Mark Longair, and Sandro Nardi
+for their contributions.
