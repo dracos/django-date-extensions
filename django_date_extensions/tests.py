@@ -1,8 +1,5 @@
 from datetime import date, datetime
-import os
 import unittest
-
-os.environ['DJANGO_SETTINGS_MODULE'] = 'example.settings'
 
 from django.db import models
 from django import forms
@@ -187,7 +184,8 @@ class ApproxDateFiltering(unittest.TestCase):
         list(qs)
 
     def test_filtering_with_prefix_date(self):
-        self.assertEqual(ApproxDateModel.objects.filter(start=ApproximateDate(year=2004, prefix='about')).count(), 1)
+        qs = ApproxDateModel.objects.filter(start=ApproximateDate(year=2004, prefix='about'))
+        self.assertEqual(qs.count(), 1)
 
 
 class PrefixDates(unittest.TestCase):
@@ -213,10 +211,6 @@ class PrefixDates(unittest.TestCase):
     def test_with_year(self):
         self.assertRaises(ValueError, ApproximateDate, prefix='about', year=2015, month=12)
 
-    def test_stringification(self):
-        self.assertEqual(str(ApproximateDate(year=2010, prefix='about')), 'about 2010')
-        self.assertEqual(str(ApproximateDate(year=2010)), '2010')
-
     def test_db(self):
         ApproxDateModel.objects.create(start=ApproximateDate(year=2010, prefix='about'))
         ApproxDateModel.objects.create(start=ApproximateDate(year=2010))
@@ -227,14 +221,20 @@ class PrefixDates(unittest.TestCase):
         self.assertTrue(form.is_valid())
         form = ApproxDateForm({'start': '2015'})
         self.assertTrue(form.is_valid())
-    
+
     def test_ordering(self):
         ApproxDateModel.objects.all().delete()
         years = [2015, 2006, 2013, 2004, 2003, 1989]
         for year in years:
             ApproxDateModel.objects.create(start=ApproximateDate(year=year, prefix='about'))
-        self.assertEqual(sorted(years), [o.start.year for o in ApproxDateModel.objects.all().order_by('start')])
-        self.assertEqual(sorted(years, reverse=True), [o.start.year for o in ApproxDateModel.objects.all().order_by('-start')])
+        self.assertEqual(
+            sorted(years),
+            [o.start.year for o in ApproxDateModel.objects.all().order_by('start')]
+        )
+        self.assertEqual(
+            sorted(years, reverse=True),
+            [o.start.year for o in ApproxDateModel.objects.all().order_by('-start')]
+        )
 
 
 if __name__ == "__main__":

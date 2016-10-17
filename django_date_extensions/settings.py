@@ -33,4 +33,3 @@ DAY_MONTH_INPUT_FORMATS = getattr(settings, 'DATE_EXTENSIONS_DAY_MONTH_INPUT_FOR
 ))
 
 ALLOWED_PREFIX = [p.lower() for p in getattr(settings, 'DATE_EXTENSIONS_ALLOWED_PREFIX', [])]
-
