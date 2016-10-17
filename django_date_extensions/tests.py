@@ -8,6 +8,7 @@ from . import settings
 from .fields import ApproximateDate, ApproximateDateField, ApproximateDateFormField
 
 settings.ALLOWED_PREFIX = ['about', 'about,', 'about.']
+settings.STRING_FORMATS = ['unknown']
 
 
 class ApproxDateModel(models.Model):
@@ -211,6 +212,9 @@ class PrefixDates(unittest.TestCase):
     def test_with_year(self):
         self.assertRaises(ValueError, ApproximateDate, prefix='about', year=2015, month=12)
 
+    def test_with_string_format(self):
+        self.assertRaises(ValueError, ApproximateDate, prefix='about', year=2015, string_format='unknown')
+
     def test_db(self):
         ApproxDateModel.objects.create(start=ApproximateDate(year=2010, prefix='about'))
         ApproxDateModel.objects.create(start=ApproximateDate(year=2010))
@@ -236,6 +240,63 @@ class PrefixDates(unittest.TestCase):
             [o.start.year for o in ApproxDateModel.objects.all().order_by('-start')]
         )
 
+
+class StringFormatsDates(unittest.TestCase):
+    def setUp(self):
+        settings.DISPLAY_STRING_FORMATS = True
+
+    def test_compare(self):
+        str_dt = ApproximateDate(string_format='unknown')
+
+        # sanity check
+        self.assertTrue(str_dt == str_dt)
+
+        self.assertFalse(str_dt != str_dt)
+
+        self.assertFalse(str_dt > str_dt)
+        self.assertTrue(str_dt >= str_dt)
+
+        self.assertFalse(str_dt < str_dt)
+        self.assertTrue(str_dt <= str_dt)
+
+    def test_with_valid_dates(self):
+        st_dt = 'unknown'
+        self.assertRaises(ValueError, ApproximateDate, year=2000, month=1, day=1, string_format=st_dt)
+        self.assertRaises(ValueError, ApproximateDate, year=2000, month=1, string_format=st_dt)
+        self.assertRaises(ValueError, ApproximateDate, prefix='about', year=2000, string_format=st_dt)
+        self.assertRaises(ValueError, ApproximateDate, year=2000, string_format=st_dt)
+        self.assertRaises(ValueError, ApproximateDate, future=True, string_format=st_dt)
+        self.assertRaises(ValueError, ApproximateDate, past=True, string_format=st_dt)
+
+    def test_invalid(self):
+        self.assertRaises(ValueError, ApproximateDate, string_format='garbage')
+
+    def test_valid(self):
+        ApproximateDate(string_format='unknown')
+        ApproximateDate(string_format='Unknown')  # incase sensitive
+
+    def test_stringification(self):
+        self.assertEqual(str(ApproximateDate(string_format='unknown')), 'unknown')
+
+    def test_db(self):
+        obj = ApproxDateModel.objects.create(start=ApproximateDate(string_format='unknown'))
+        self.assertEqual(obj.start, ApproximateDate(string_format='unknown'))
+
+    def test_display_visible(self):
+        obj = ApproxDateModel.objects.create(start=ApproximateDate(string_format='unknown'))
+        self.assertEqual(obj.start, ApproximateDate(string_format='unknown'))
+        self.assertEqual(str(obj.start), 'unknown')
+
+    def test_date_with_string_format_form(self):
+        form = ApproxDateForm({'start': 'unknown'})
+        self.assertTrue(form.is_valid())
+        form = ApproxDateForm({'start': 'garbage'})
+        self.assertFalse(form.is_valid())
+
+    def test_filtering_with_string_format(self):
+        ApproxDateModel.objects.all().delete()
+        ApproxDateModel.objects.create(start=ApproximateDate(string_format='unknown'))
+        self.assertEqual(ApproxDateModel.objects.filter(start=ApproximateDate(string_format='unknown')).count(), 1)
 
 if __name__ == "__main__":
     unittest.main()
