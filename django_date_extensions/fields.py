@@ -152,6 +152,9 @@ class ApproximateDateField(FIELD_BASE):
         if isinstance(value, (datetime.date, datetime.datetime)):
             year, month, day = value.year, value.month, value.day
         else:
+            if value in settings.STRING_FORMATS:
+                return ApproximateDate(string_format=value)
+
             prefix_date = prefix_date_re.search(value)
             prefix_date_reverse = prefix_date_reverse_re.search(value)
             ansi_date = ansi_date_re.search(value)
