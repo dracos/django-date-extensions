@@ -31,3 +31,8 @@ DAY_MONTH_INPUT_FORMATS = getattr(settings, 'DATE_EXTENSIONS_DAY_MONTH_INPUT_FOR
     '%b %d', '%d %b',  # 'Oct 25', '25 Oct'
     '%B %d', '%d %B',  # 'October 25', '25 October'
 ))
+
+ALLOWED_PREFIX = [p.lower() for p in getattr(settings, 'DATE_EXTENSIONS_ALLOWED_PREFIX', [])]
+
+# formats such as unknown, N/A (in-case sensitive)
+STRING_FORMATS = getattr(settings, 'DATE_EXTENSIONS_STRING_FORMATS', [])

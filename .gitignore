@@ -4,3 +4,6 @@
 /build
 /django_date_extensions.egg-info/
 /.tox
+/venv
+# pyCharm
+.idea

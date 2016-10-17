@@ -3,6 +3,8 @@ import time
 import re
 from functools import total_ordering
 
+import django
+from django.utils.six import with_metaclass
 from django.db import models
 from django import forms
 from django.forms import ValidationError
@@ -17,17 +19,24 @@ try:
 except ImportError:
     pass
 
+PREFIX_RE = re.compile('^(?i)[a-zA-Z]+[.,]?$')
+
 
 @total_ordering
 class ApproximateDate(object):
     """A date object that accepts 0 for month or day to mean we don't
        know when it is within that month/year."""
-    def __init__(self, year=0, month=0, day=0, future=False, past=False):
-        if future and past:
+    def __init__(self, year=0, month=0, day=0, future=False, past=False, prefix=None, string_format=None):
+        if string_format:
+            if year or month or day or future or past or prefix:
+                raise ValueError("String format can have no year, month, day, prefix, future or past")
+            elif string_format.lower() not in settings.STRING_FORMATS:
+                raise ValueError("Invalid string format `{0}`".format(string_format))
+        elif future and past:
             raise ValueError("Can't be both future and past")
         elif future or past:
-            if year or month or day:
-                raise ValueError("Future or past dates can have no year, month or day")
+            if year or month or day or prefix:
+                raise ValueError("Future or past dates can have no year, month, day or prefix")
         elif year and month and day:
             datetime.date(year, month, day)
         elif year and month:
@@ -39,26 +48,43 @@ class ApproximateDate(object):
         else:
             raise ValueError("You must specify a year")
 
+        # validate prefix
+        if prefix:
+            if not settings.ALLOWED_PREFIX:
+                raise ValueError("Prefix not allowed")
+            elif month or day or string_format:
+                raise ValueError("Prefix can only be set with Year only date")
+            elif not PREFIX_RE.match(prefix):
+                raise ValueError("Prefix value can only contains alphabets and can have maximum of 5 characters")
+            elif prefix.lower() not in settings.ALLOWED_PREFIX:
+                raise ValueError("Prefix '{0}' not allowed".format(prefix))
+
         self.future = future
         self.past = past
         self.year = year
         self.month = month
         self.day = day
+        self.prefix = prefix
+        self.string_format = string_format
 
     def __repr__(self):
-        if self.future or self.past:
+        if self.future or self.past or self.prefix or self.string_format:
             return str(self)
         return "{year:04d}-{month:02d}-{day:02d}".format(year=self.year, month=self.month, day=self.day)
 
     def __str__(self):
         if self.future:
             return 'future'
-        if self.past:
+        elif self.past:
             return 'past'
+        elif self.string_format:
+            return self.string_format
         elif self.year and self.month and self.day:
             return dateformat.format(self, settings.OUTPUT_FORMAT_DAY_MONTH_YEAR)
         elif self.year and self.month:
             return dateformat.format(self, settings.OUTPUT_FORMAT_MONTH_YEAR)
+        elif self.year and self.prefix:
+            return '{0} {1}'.format(self.prefix, dateformat.format(self, settings.OUTPUT_FORMAT_YEAR))
         elif self.year:
             return dateformat.format(self, settings.OUTPUT_FORMAT_YEAR)
 
@@ -70,8 +96,8 @@ class ApproximateDate(object):
         if not isinstance(other, ApproximateDate):
             return False
 
-        return (self.year, self.month, self.day, self.future, self.past) ==\
-               (other.year, other.month, other.day, other.future, other.past)
+        return (self.year, self.month, self.day, self.future, self.past, self.prefix, self.string_format) ==\
+               (other.year, other.month, other.day, other.future, other.past, other.prefix, self.string_format)
 
     def __ne__(self, other):
         return not (self == other)
@@ -93,9 +119,16 @@ class ApproximateDate(object):
 
 
 ansi_date_re = re.compile(r'^\d{4}-\d{1,2}-\d{1,2}$')
+prefix_date_re = re.compile(r'^([a-zA-Z]+[.,]?) (\d{4})$')
+prefix_date_reverse_re = re.compile(r'^(\d{4}) ([a-zA-Z]+[,.]?)$')
+
+if django.VERSION < (1, 8,):
+    FIELD_BASE = with_metaclass(models.SubfieldBase, models.CharField)
+else:
+    FIELD_BASE = models.CharField
 
 
-class ApproximateDateField(models.CharField):
+class ApproximateDateField(FIELD_BASE):
     """A model field to store ApproximateDate objects in the database
        (as a CharField because MySQLdb intercepts dates from the
        database and forces them to be datetime.date()s."""
@@ -114,12 +147,31 @@ class ApproximateDateField(models.CharField):
         if value == 'past':
             return ApproximateDate(past=True)
 
-        if not ansi_date_re.search(value):
-            raise ValidationError('Enter a valid date in YYYY-MM-DD format.')
+        prefix = None
 
-        year, month, day = map(int, value.split('-'))
+        if isinstance(value, (datetime.date, datetime.datetime)):
+            year, month, day = value.year, value.month, value.day
+        else:
+            if value in settings.STRING_FORMATS:
+                return ApproximateDate(string_format=value)
+
+            prefix_date = prefix_date_re.search(value)
+            prefix_date_reverse = prefix_date_reverse_re.search(value)
+            ansi_date = ansi_date_re.search(value)
+            if not prefix_date and not ansi_date and not prefix_date_reverse:
+                raise ValidationError('Enter a valid date in YYYY-MM-DD format.')
+
+            if prefix_date:
+                prefix, year = value.split(' ')
+                year, month, day = map(int, [year, 0, 0])
+            elif prefix_date_reverse:
+                year, prefix = value.split(' ')
+                year, month, day = map(int, [year, 0, 0])
+            else:
+                year, month, day = map(int, value.split('-'))
+
         try:
-            return ApproximateDate(year, month, day)
+            return ApproximateDate(year, month, day, prefix=prefix)
         except ValueError as e:
             msg = 'Invalid date: %s' % str(e)
             raise ValidationError(msg)
@@ -132,15 +184,26 @@ class ApproximateDateField(models.CharField):
         if value in (None, ''):
             return ''
         if isinstance(value, ApproximateDate):
+            if value.prefix:
+                return '{0} {1}'.format(value.year, value.prefix)
             return repr(value)
-        if isinstance(value, datetime.date):
+        if isinstance(value, (datetime.date, datetime.datetime)):
             return dateformat.format(value, "Y-m-d")
         if value == 'future':
             return 'future'
         if value == 'past':
             return 'past'
-        if not ansi_date_re.search(value):
+
+        if value.lower() in settings.STRING_FORMATS:
+            return value
+
+        prefix_date = prefix_date_re.search(value)
+        prefix_date_reverse = prefix_date_reverse_re.search(value)
+        ansi_date = ansi_date_re.search(value)
+        if not prefix_date and not prefix_date_reverse and not ansi_date:
             raise ValidationError('Enter a valid date in YYYY-MM-DD format.')
+        if prefix_date_reverse:
+            value = '{0} {1}'.format(prefix_date_reverse.group(2), prefix_date_reverse.group(1))
         return value
 
     def value_to_string(self, obj):
@@ -172,22 +235,33 @@ class ApproximateDateFormField(forms.fields.Field):
         if isinstance(value, ApproximateDate):
             return value
         value = re.sub('(?<=\d)(st|nd|rd|th)', '', value.strip())
-        for format in settings.DATE_INPUT_FORMATS:
+        for date_format in settings.DATE_INPUT_FORMATS:
             try:
-                return ApproximateDate(*time.strptime(value, format)[:3])
+                return ApproximateDate(*time.strptime(value, date_format)[:3])
             except ValueError:
                 continue
-        for format in settings.MONTH_INPUT_FORMATS:
+        for month_format in settings.MONTH_INPUT_FORMATS:
             try:
-                match = time.strptime(value, format)
+                match = time.strptime(value, month_format)
                 return ApproximateDate(match[0], match[1], 0)
             except ValueError:
                 continue
-        for format in settings.YEAR_INPUT_FORMATS:
+
+        prefix = None
+        match = prefix_date_re.search(value)
+        if match:
+            prefix = match.group(1)
+            value = match.group(2)
+
+        for year_format in settings.YEAR_INPUT_FORMATS:
             try:
-                return ApproximateDate(time.strptime(value, format)[0], 0, 0)
+                return ApproximateDate(time.strptime(value, year_format)[0], 0, 0, prefix=prefix)
             except ValueError:
                 continue
+
+        if value.lower() in settings.STRING_FORMATS:
+            return ApproximateDate(string_format=value)
+
         raise ValidationError('Please enter a valid date.')
 
 
