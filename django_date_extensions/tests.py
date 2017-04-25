@@ -3,6 +3,7 @@ import os
 import unittest
 
 from django.db import models
+from django import forms
 
 from .fields import ApproximateDate, ApproximateDateField
 
@@ -11,9 +12,16 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'example.settings'
 
 class ApproxDateModel(models.Model):
     start = ApproximateDateField()
+    can_be_null = ApproximateDateField(null=True)
 
     def __unicode__(self):
         return u'%s' % str(self.start)
+
+
+class ApproxDateForm(forms.ModelForm):
+    class Meta:
+        model = ApproxDateModel
+        fields = ('start', 'can_be_null')
 
 
 class PastAndFuture(unittest.TestCase):
@@ -180,6 +188,11 @@ class ApproximateDateFieldTesting(unittest.TestCase):
         self.assertEqual(1, ApproxDateModel.objects.filter(start=a1.start).count())
         self.assertEqual(1, ApproxDateModel.objects.filter(start="").count())
         self.assertEqual(1, ApproxDateModel.objects.filter(start=a1.start or "").count())
+
+
+class ApproximateDateFormTesting(unittest.TestCase):
+    def test_form(self):
+        ApproxDateForm()
 
 
 if __name__ == "__main__":

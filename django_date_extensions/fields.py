@@ -160,7 +160,7 @@ class ApproximateDateField(models.CharField):
 
 # TODO: Expand to work more like my PHP strtotime()-using function
 class ApproximateDateFormField(forms.fields.Field):
-    def __init__(self, max_length=10, *args, **kwargs):
+    def __init__(self, max_length=10, empty_value='', *args, **kwargs):
         super(ApproximateDateFormField, self).__init__(*args, **kwargs)
 
     def clean(self, value):
