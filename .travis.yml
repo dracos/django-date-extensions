@@ -9,11 +9,11 @@ env:
   matrix:
     - TOXENV=flake8
     - TOXENV=py27-1.8
-    - TOXENV=py27-1.9
     - TOXENV=py27-1.10
+    - TOXENV=py27-1.11
     - TOXENV=py34-1.8
-    - TOXENV=py34-1.9
     - TOXENV=py34-1.10
+    - TOXENV=py34-1.11
 
 install:
   - pip install tox
