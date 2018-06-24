@@ -1,8 +1,8 @@
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from .forms import DatesForm
-
 
 def view(request):
     dates_form = DatesForm(request.GET or None)
     dates_form.is_valid()
-    return render_to_response('form.html', {'form': dates_form})
+    return render(request, 'form.html', {'form': dates_form})
+
