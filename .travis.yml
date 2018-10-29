@@ -10,8 +10,14 @@ env:
     - TOXENV=flake8
     - TOXENV=py27-1.11
     - TOXENV=py34-1.11
+    - TOXENV=py34-2.0
+    - TOXENV=py34-2.1
     - TOXENV=py36-1.11
-    - TOXENV=py37-1.11    
+    - TOXENV=py36-2.0
+    - TOXENV=py36-2.1
+    - TOXENV=py37-1.11
+    - TOXENV=py37-2.0
+    - TOXENV=py37-2.1
 
 install:
   - pip install tox

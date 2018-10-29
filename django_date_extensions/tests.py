@@ -2,8 +2,9 @@ from datetime import date, datetime
 import os
 import unittest
 
-from django.db import models
 from django import forms
+from django import VERSION as DJANGO_VERSION
+from django.db import models
 
 from .fields import ApproximateDate, ApproximateDateField
 
@@ -184,7 +185,11 @@ class ApproximateDateFieldTesting(unittest.TestCase):
 
     def test_empty_fields(self):
         a1 = ApproxDateModel.objects.create(start="")
-        self.assertEqual(0, ApproxDateModel.objects.filter(start=None).count())
+
+        if DJANGO_VERSION[0] < 2:
+            self.assertEqual(0, ApproxDateModel.objects.filter(start=None).count())
+        else:
+            self.assertEqual(1, ApproxDateModel.objects.filter(start=None).count())
         self.assertEqual(1, ApproxDateModel.objects.filter(start=a1.start).count())
         self.assertEqual(1, ApproxDateModel.objects.filter(start="").count())
         self.assertEqual(1, ApproxDateModel.objects.filter(start=a1.start or "").count())
