@@ -173,7 +173,7 @@ class ApproximateDateFormField(forms.fields.Field):
             return ApproximateDate(past=True)
         if isinstance(value, ApproximateDate):
             return value
-        value = re.sub('(?<=\d)(st|nd|rd|th)', '', value.strip())
+        value = re.sub(r'(?<=\d)(st|nd|rd|th)', '', value.strip())
         for date_format in settings.DATE_INPUT_FORMATS:
             try:
                 return ApproximateDate(*time.strptime(value, date_format)[:3])
@@ -221,7 +221,7 @@ class PrettyDateField(forms.fields.Field):
             return value.date()
         if isinstance(value, datetime.date):
             return value
-        value = re.sub('(?<=\d)(st|nd|rd|th)', '', value.strip())
+        value = re.sub(r'(?<=\d)(st|nd|rd|th)', '', value.strip())
         for date_input_format in settings.DATE_INPUT_FORMATS:
             try:
                 return datetime.date(*time.strptime(value, date_input_format)[:3])
