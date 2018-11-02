@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import datetime
 import time
 import re
@@ -8,12 +10,12 @@ from django import forms
 from django.forms import ValidationError
 from django.utils import dateformat
 
-from . import settings
-from .widgets import PrettyDateInput
+from django_date_extensions import settings
+from django_date_extensions.widgets import PrettyDateInput
 
 
 @total_ordering
-class ApproximateDate(object):
+class ApproximateDate:
     """A date object that accepts 0 for month or day to mean we don't
        know when it is within that month/year."""
     def __init__(self, year=0, month=0, day=0, future=False, past=False):
@@ -147,12 +149,8 @@ class ApproximateDateField(models.CharField):
         return self.get_prep_value(value)
 
     def formfield(self, **kwargs):
-        defaults = {'form_class': ApproximateDateFormField}
-        defaults.update(kwargs)
-        return super(ApproximateDateField, self).formfield(**defaults)
-
-#    def get_db_prep_lookup(self, lookup_type, value):
-#        pass
+        kwargs.setdefault('form_class', ApproximateDateFormField)
+        return super(ApproximateDateField, self).formfield(**kwargs)
 
 
 # TODO: Expand to work more like my PHP strtotime()-using function
