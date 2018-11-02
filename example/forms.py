@@ -1,5 +1,5 @@
 from django import forms
-from django_date_extensions.fields import PrettyDateField, ApproximateDateFormField
+from django_date_extensions.forms import PrettyDateField, ApproximateDateFormField
 
 
 class DatesForm(forms.Form):

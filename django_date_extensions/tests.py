@@ -1,12 +1,16 @@
-from datetime import date, datetime
+from __future__ import absolute_import
+
 import os
 import unittest
+from datetime import date, datetime
 
 from django import forms
 from django import VERSION as DJANGO_VERSION
 from django.db import models
 
-from .fields import ApproximateDate, ApproximateDateField
+from django_date_extensions.fields import ApproximateDateField
+from django_date_extensions.types import ApproximateDate
+
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'example.settings'
 

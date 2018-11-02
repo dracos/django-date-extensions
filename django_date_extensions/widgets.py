@@ -1,9 +1,11 @@
+from __future__ import absolute_import
+
 from datetime import date
 
 from django.utils import dateformat
 from django.forms import widgets
 
-from . import settings
+from django_date_extensions import settings
 
 
 class PrettyDateInput(widgets.Input):
