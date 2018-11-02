@@ -67,9 +67,6 @@ class ApproximateDate(object):
         return (self.year, self.month, self.day, self.future, self.past) ==\
                (other.year, other.month, other.day, other.future, other.past)
 
-    def __ne__(self, other):
-        return not (self == other)
-
     def __lt__(self, other):
         if other is None:
             return False
