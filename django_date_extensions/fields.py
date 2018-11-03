@@ -59,7 +59,7 @@ class ApproximateDateField(models.CharField):
         if value in (None, ''):
             return ''
         if isinstance(value, ApproximateDate):
-            return repr(value)
+            return str(value)
         if isinstance(value, datetime.date):
             return dateformat.format(value, "Y-m-d")
         if value == 'future':

@@ -38,14 +38,6 @@ class PastAndFuture(unittest.TestCase):
         self.assertRaises(ValueError, ApproximateDate, future=True, year=2000)
         self.assertRaises(ValueError, ApproximateDate, past=True,   year=2000)
 
-    def test_stringification(self):
-
-        self.assertEqual(str(ApproximateDate(future=True)), 'future')
-        self.assertEqual(str(ApproximateDate(past=True)), 'past')
-
-        self.assertEqual(repr(ApproximateDate(future=True)), 'future')
-        self.assertEqual(repr(ApproximateDate(past=True)), 'past')
-
 
 class CompareDates(unittest.TestCase):
 
@@ -149,21 +141,6 @@ class CompareDates(unittest.TestCase):
         self.assertTrue(ApproximateDate(2007) < date(2007, 9, 3))
 
 
-class Lengths(unittest.TestCase):
-    known_lengths = (
-        ({'year': 1999}, 10),
-        ({'year': 1999, 'month': 1}, 10),
-        ({'year': 1999, 'month': 1, 'day': 1}, 10),
-        ({'future': True},                      6),
-        ({'past': True},                        4),
-    )
-
-    def test_length(self):
-        for kwargs, length in self.known_lengths:
-            approx = ApproximateDate(**kwargs)
-            self.assertEqual(len(approx), length)
-
-
 class ApproxDateFiltering(unittest.TestCase):
     def setUp(self):
         for year in [2000, 2001, 2002, 2003, 2004]:
@@ -220,6 +197,25 @@ class TestApproximateDate(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             ApproximateDate.from_string('9.5.1945', '%d.%Y')
+
+    def test_format(self):
+        self.assertEqual('*{:%m}*'.format(ApproximateDate(year=1945, month=5)), '*05*')
+
+    def test_string(self):
+        cases = (
+            (ApproximateDate(year=1945), '1945'),
+            (ApproximateDate(year=1945, month=5), '1945-05'),
+            (ApproximateDate(year=1945, month=5, day=9), '1945-05-09'),
+            (ApproximateDate(future=True), 'future'),
+            (ApproximateDate(past=True), 'past'),
+        )
+
+        for case in cases:
+            self.assertEqual(str(case[0]), case[1])
+
+    def test_repr(self):
+        self.assertEqual(repr(ApproximateDate(past=True)), 'ApproximateDate(past)')
+        self.assertEqual(repr(ApproximateDate(year=1945)), 'ApproximateDate(1945)')
 
 
 if __name__ == "__main__":

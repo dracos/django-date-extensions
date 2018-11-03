@@ -5,10 +5,6 @@ from __future__ import absolute_import
 from datetime import date, datetime
 from functools import total_ordering
 
-from django.utils import dateformat
-
-from django_date_extensions import settings
-
 
 FULLY_QUALIFYING_CODES = ('%c', '%j', 'x', '%X')
 MONTHS_DAY_CODE = '%d'
@@ -25,6 +21,7 @@ class ApproximateDate:
        know when it is within that month/year."""
 
     def __init__(self, year=0, month=0, day=0, future=False, past=False):
+        # TODO support negative years
         if future and past:
             raise ValueError("Can't be both future and past")
         elif future or past:
@@ -47,24 +44,23 @@ class ApproximateDate:
         self.month = month
         self.day = day
 
-    def __repr__(self):
-        if self.future or self.past:
-            return str(self)
-        return "{year:04d}-{month:02d}-{day:02d}".format(year=self.year, month=self.month, day=self.day)
-
-    # TODO this shouldn't depend on Django settings and utils to be usable outside a
-    # Django project
-    def __str__(self):
-        if self.future:
-            return FUTURE
+    def __format__(self, format_spec):
         if self.past:
             return PAST
-        elif self.year and self.month and self.day:
-            return dateformat.format(self, settings.OUTPUT_FORMAT_DAY_MONTH_YEAR)
-        elif self.year and self.month:
-            return dateformat.format(self, settings.OUTPUT_FORMAT_MONTH_YEAR)
-        elif self.year:
-            return dateformat.format(self, settings.OUTPUT_FORMAT_YEAR)
+        if self.future:
+            return FUTURE
+        return self._date_dummy.__format__(format_spec)
+
+    def __repr__(self):
+        return '{}({})'.format(self.__class__.__name__, str(self))
+
+    def __str__(self):
+        format = '%04Y'
+        if self.month:
+            format += '-%02m'
+            if self.day:
+                format += '-%02d'
+        return self.__format__(format)
 
     def __eq__(self, other):
         if isinstance(other, (date, datetime)):
@@ -89,9 +85,11 @@ class ApproximateDate:
 
         return (self.year, self.month, self.day) < (other.year, other.month, other.day)
 
-    # REMOVE
-    def __len__(self):
-        return len(self.__repr__())
+    @property
+    def _date_dummy(self):
+        if self.past or self.future:
+            return None
+        return date(year=self.year, month=max(1, self.month), day=max(1, self.day))
 
     @classmethod
     def from_string(cls, date_string, format):
