@@ -1,6 +1,7 @@
 *.pyc
-/MANIFEST
-/dist
-/build
-/django_date_extensions.egg-info/
-/.tox
+*.sqlite3
+*.egg-info/
+MANIFEST
+dist/
+build/
+.tox/
