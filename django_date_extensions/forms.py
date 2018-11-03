@@ -5,12 +5,15 @@ import re
 import time
 
 from django.core.exceptions import ValidationError
+from django.forms.fields import Field, IntegerField, MultiValueField
 from django.utils import dateformat
 
 from django_date_extensions import settings
 from django_date_extensions.types import ApproximateDate
+from django_date_extensions.widgets import NumbersInput
 
 
+# TODO provide localized error messages
 
 
 # TODO use ApproximateDate.from_string
@@ -110,6 +113,33 @@ class PrettyDateField(Field):
             return dateformat.format(value, settings.OUTPUT_FORMAT_DAY_MONTH_YEAR)
         else:
             raise TypeError('Unexpected type: {}'.format(value.__class__))
+
+
+class ApproximateDateNumbersField(MultiValueField):
+    """ This field's widget does not support past and future as input values (yet?),
+        but it renders the inputs as number widgets. """
+    widget = NumbersInput
+
+    def __init__(self, **kwargs):
+        fields = (
+            IntegerField(required=False),
+            IntegerField(required=False, min_value=0, max_value=12),
+            IntegerField(required=False, min_value=0, max_value=31)
+        )
+        super().__init__(fields, **{**kwargs, 'require_all_fields': False})
+
+    def compress(self, data_list):
+        if not data_list or data_list[0] is None:
+            return None
+
+        try:
+            return ApproximateDate(
+                year=data_list[0] or 0,
+                month=data_list[1] or 0,
+                day=data_list[2] or 0
+            )
+        except ValueError as e:
+            raise ValidationError(e)
 
 
 __all__ = (ApproximateDateFormField.__name__, PrettyDateField.__name__)
