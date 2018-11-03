@@ -4,18 +4,17 @@ import datetime
 import re
 import time
 
-from django import forms
+from django.core.exceptions import ValidationError
+from django.utils import dateformat
 
 from django_date_extensions import settings
 from django_date_extensions.types import ApproximateDate
-from django_date_extensions.widgets import PrettyDateInput
 
 
-ValidationError = forms.ValidationError
 
 
-# TODO: Expand to work more like my PHP strtotime()-using function
-class ApproximateDateFormField(forms.fields.Field):
+# TODO use ApproximateDate.from_string
+class ApproximateDateFormField(Field):
     def __init__(self, max_length=10, empty_value='', *args, **kwargs):
         super(ApproximateDateFormField, self).__init__(*args, **kwargs)
 
@@ -49,24 +48,23 @@ class ApproximateDateFormField(forms.fields.Field):
         raise ValidationError('Please enter a valid date.')
 
 
-# PrettyDateField - same as DateField but accepts slightly more input,
-# like ApproximateDateFormField above. If initialised with future=True,
-# it will assume a date without year means the current year (or the next
-# year if the day is before the current date). If future=False, it does
-# the same but in the past.
-class PrettyDateField(forms.fields.Field):
-    widget = PrettyDateInput
+class PrettyDateField(Field):
+    """ PrettyDateField - same as DateField but accepts slightly more input, like
+        :class:`ApproximateDateFormField` above. If initialised with future=True, it
+        will assume a date without year means the current year (or the next year if the
+        day is before the current date). If future=False, it does the same but in the
+        past. """
 
     def __init__(self, future=None, *args, **kwargs):
         self.future = future
-        super(PrettyDateField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def clean(self, value):
         """
         Validates that the input can be converted to a date. Returns a Python
         datetime.date object.
         """
-        super(PrettyDateField, self).clean(value)
+        super().clean(value)
         if value in (None, ''):
             return None
         if value == 'future':
@@ -102,6 +100,16 @@ class PrettyDateField(forms.fields.Field):
                 continue
 
         raise ValidationError('Please enter a valid date.')
+
+    def prepare_value(self, value):
+        if value is None:
+            return ''
+        elif isinstance(value, str):
+            return value
+        elif isinstance(value, datetime.date):
+            return dateformat.format(value, settings.OUTPUT_FORMAT_DAY_MONTH_YEAR)
+        else:
+            raise TypeError('Unexpected type: {}'.format(value.__class__))
 
 
 __all__ = (ApproximateDateFormField.__name__, PrettyDateField.__name__)
