@@ -204,5 +204,23 @@ class ApproximateDateFormTesting(unittest.TestCase):
         ApproxDateForm()
 
 
+class TestApproximateDate(unittest.TestCase):
+
+    def test_from_string(self):
+        cases = (
+            ('9.5.1945', '%d.%m.%Y', {'year': 1945, 'month': 5, 'day': 9}),
+            ('5.1945', '%m.%Y', {'year': 1945, 'month': 5}),
+            ('1945', '%Y', {'year': 1945}),
+            ('future', '%Y', {'future': True}),
+            ('past', '%Y', {'past': True}),
+        )
+        for case in cases:
+            self.assertEqual(ApproximateDate.from_string(case[0], case[1]),
+                             ApproximateDate(**case[2]))
+
+        with self.assertRaises(ValueError):
+            ApproximateDate.from_string('9.5.1945', '%d.%Y')
+
+
 if __name__ == "__main__":
     unittest.main()

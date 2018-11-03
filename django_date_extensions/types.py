@@ -2,12 +2,21 @@
 
 from __future__ import absolute_import
 
-import datetime
+from datetime import date, datetime
 from functools import total_ordering
 
 from django.utils import dateformat
 
 from django_date_extensions import settings
+
+
+FULLY_QUALIFYING_CODES = ('%c', '%j', 'x', '%X')
+MONTHS_DAY_CODE = '%d'
+MONTH_CODES = ('%b', '%B', '%m')
+WEEKS_DAY_CODES = ('%a', '%A', '%w')
+YEARS_WEEK_CODES = ('%U', '%W')
+
+FUTURE, PAST = 'future', 'past'
 
 
 @total_ordering
@@ -22,13 +31,13 @@ class ApproximateDate:
             if year or month or day:
                 raise ValueError("Future or past dates can have no year, month or day")
         elif year and month and day:
-            datetime.date(year, month, day)
+            date(year, month, day)
         elif year and month:
-            datetime.date(year, month, 1)
+            date(year, month, 1)
         elif year and day:
             raise ValueError("You cannot specify just a year and a day")
         elif year:
-            datetime.date(year, 1, 1)
+            date(year, 1, 1)
         else:
             raise ValueError("You must specify a year")
 
@@ -47,9 +56,9 @@ class ApproximateDate:
     # Django project
     def __str__(self):
         if self.future:
-            return 'future'
+            return FUTURE
         if self.past:
-            return 'past'
+            return PAST
         elif self.year and self.month and self.day:
             return dateformat.format(self, settings.OUTPUT_FORMAT_DAY_MONTH_YEAR)
         elif self.year and self.month:
@@ -58,7 +67,7 @@ class ApproximateDate:
             return dateformat.format(self, settings.OUTPUT_FORMAT_YEAR)
 
     def __eq__(self, other):
-        if isinstance(other, (datetime.date, datetime.datetime)):
+        if isinstance(other, (date, datetime)):
             return (self.year, self.month, self.day) ==\
                    (other.year, other.month, other.day)
 
@@ -83,6 +92,28 @@ class ApproximateDate:
     # REMOVE
     def __len__(self):
         return len(self.__repr__())
+
+    @classmethod
+    def from_string(cls, date_string, format):
+        if date_string == PAST:
+            return cls(past=True)
+        if date_string == FUTURE:
+            return cls(future=True)
+
+        relevant_attributes = ['year']
+
+        if any(x in format for x in FULLY_QUALIFYING_CODES) or \
+                (any(x in format for x in YEARS_WEEK_CODES) and
+                 any(x in format for x in WEEKS_DAY_CODES)):
+            relevant_attributes.extend(('month', 'day'))
+        else:
+            if any(x in format for x in MONTH_CODES):
+                relevant_attributes.append('month')
+                if MONTHS_DAY_CODE in format:
+                    relevant_attributes.append('day')
+
+        parsed_date = datetime.strptime(date_string, format).date()
+        return cls(**{k: getattr(parsed_date, k) for k in relevant_attributes})
 
 
 __all__ = (ApproximateDate.__name__,)
