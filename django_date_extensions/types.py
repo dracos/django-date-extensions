@@ -92,6 +92,14 @@ class ApproximateDate:
         return date(year=self.year, month=max(1, self.month), day=max(1, self.day))
 
     @classmethod
+    def from_date(cls, value):
+        return cls(year=value.year, month=value.month, day=value.day)
+
+    @classmethod
+    def from_datetime(cls, value):
+        return cls.from_date(value.date())
+
+    @classmethod
     def from_string(cls, date_string, format):
         if date_string == PAST:
             return cls(past=True)

@@ -133,6 +133,7 @@ class CompareDates(unittest.TestCase):
         self.assertFalse(past != past_too)
 
     def test_compare_date(self):
+        # TODO more challenging tests
         """
         You can compare Approximate date objects to regular date ones.
         """
@@ -157,7 +158,7 @@ class ApproxDateFiltering(unittest.TestCase):
         list(qs)
 
 
-class ApproximateDateFieldTesting(unittest.TestCase):
+class TestApproximateDateField(unittest.TestCase):
     def test_deconstruction(self):
         f = ApproximateDateField()
         name, path, args, kwargs = f.deconstruct()
@@ -174,6 +175,34 @@ class ApproximateDateFieldTesting(unittest.TestCase):
         self.assertEqual(1, ApproxDateModel.objects.filter(start=a1.start).count())
         self.assertEqual(1, ApproxDateModel.objects.filter(start="").count())
         self.assertEqual(1, ApproxDateModel.objects.filter(start=a1.start or "").count())
+
+
+class TestDatabaseSorting(unittest.TestCase):
+    def setUp(self):
+        ApproxDateModel.objects.all().delete()
+
+    def test_sequence(self):
+        dates_order = (
+            ApproximateDate(year=1),
+            ApproximateDate(year=2),
+            ApproximateDate(year=2, month=2),
+            ApproximateDate(year=2, month=2, day=4),
+            ApproximateDate(year=2, month=12),
+        )
+
+        for _date in dates_order:
+            ApproxDateModel.objects.create(start=_date)
+
+        query_result = ApproxDateModel.objects.order_by('start')
+        for i, obj in enumerate(query_result):
+            self.assertIsInstance(obj.start, ApproximateDate)
+            self.assertEqual(obj.start, dates_order[i])
+
+        query_result = ApproxDateModel.objects.order_by('-start')
+        result_length = len(query_result)
+        self.assertEqual(result_length, len(dates_order))
+        for i, obj in enumerate(query_result):
+            self.assertEqual(obj.start, dates_order[result_length-i-1])
 
 
 class ApproximateDateFormTesting(unittest.TestCase):
