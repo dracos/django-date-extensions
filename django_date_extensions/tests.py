@@ -6,7 +6,7 @@ from datetime import date, datetime
 
 from django import forms
 from django import VERSION as DJANGO_VERSION
-from django.db import models
+from django.db import models, IntegrityError
 
 from django_date_extensions.fields import ApproximateDateField
 from django_date_extensions.types import ApproximateDate
@@ -163,18 +163,14 @@ class TestApproximateDateField(unittest.TestCase):
         f = ApproximateDateField()
         name, path, args, kwargs = f.deconstruct()
         new_instance = ApproximateDateField(*args, **kwargs)
-        self.assertEqual(f.max_length, new_instance.max_length)
+        self.assertEqual(f.null, new_instance.null)
 
-    def test_empty_fields(self):
-        a1 = ApproxDateModel.objects.create(start="")
-
-        if DJANGO_VERSION[0] < 2:
-            self.assertEqual(0, ApproxDateModel.objects.filter(start=None).count())
-        else:
-            self.assertEqual(1, ApproxDateModel.objects.filter(start=None).count())
-        self.assertEqual(1, ApproxDateModel.objects.filter(start=a1.start).count())
-        self.assertEqual(1, ApproxDateModel.objects.filter(start="").count())
-        self.assertEqual(1, ApproxDateModel.objects.filter(start=a1.start or "").count())
+    def test_nullable(self):
+        x = ApproxDateModel(start=ApproximateDate(future=True), can_be_null=None)
+        x.save()
+        with self.assertRaises(IntegrityError):
+            x.start = None
+            x.save()
 
 
 class TestDatabaseSorting(unittest.TestCase):

@@ -18,9 +18,6 @@ from django_date_extensions.widgets import NumbersInput
 
 # TODO use ApproximateDate.from_string
 class ApproximateDateFormField(Field):
-    def __init__(self, max_length=10, empty_value='', *args, **kwargs):
-        super(ApproximateDateFormField, self).__init__(*args, **kwargs)
-
     def clean(self, value):
         super(ApproximateDateFormField, self).clean(value)
         if value in (None, ''):
