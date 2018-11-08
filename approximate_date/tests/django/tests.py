@@ -12,56 +12,7 @@ from approximate_date.tests.django.models import TestModel
 from approximate_date.types import VagueDate
 
 
-class ApproxDateForm(forms.ModelForm):
-    class Meta:
-        model = TestModel
-        fields = ('start', 'can_be_null')
-
-
-class CompareDates(TestCase):
-
-    def test_compare(self):
-
-        y_past = VagueDate(year=2000)
-        y_future = VagueDate(year=2100)
-
-        # check that we can be compared to None, '' and u''
-        for bad_val in ('', u'', None):
-            self.assertFalse(y_past in (bad_val,))
-            self.assertFalse(y_past == bad_val)
-            self.assertTrue(y_past != bad_val)
-
-        # sanity check
-        self.assertTrue(y_past == y_past)
-        self.assertTrue(y_future == y_future)
-
-        self.assertFalse(y_past != y_past)
-        self.assertFalse(y_future != y_future)
-
-        self.assertTrue(y_past != y_future)
-        self.assertTrue(y_future != y_past)
-
-        self.assertTrue(y_future > y_past)
-        self.assertTrue(y_future >= y_past)
-        self.assertFalse(y_past > y_future)
-        self.assertFalse(y_past >= y_future)
-
-        self.assertTrue(y_past < y_future)
-        self.assertTrue(y_past <= y_future)
-        self.assertFalse(y_future < y_past)
-        self.assertFalse(y_future <= y_past)
-
-    def test_compare_date(self):
-        # TODO more challenging tests
-        """
-        You can compare Approximate date objects to regular date ones.
-        """
-        self.assertEqual(VagueDate(2008, 9, 3), date(2008, 9, 3))
-        self.assertTrue(VagueDate(2008, 9, 3) < date(2009, 9, 3))
-        self.assertTrue(VagueDate(2007) < date(2007, 9, 3))
-
-
-class ApproxDateFiltering(TestCase):
+class TestVagueDateFiltering(TestCase):
     def setUp(self):
         for year in [2000, 2001, 2002, 2003, 2004]:
             TestModel.objects.create(start=VagueDate(year=year))
@@ -77,7 +28,7 @@ class ApproxDateFiltering(TestCase):
         list(qs)
 
 
-class TestApproximateDateField(TestCase):
+class TestVagueDateField(TestCase):
     def test_deconstruction(self):
         f = VagueDateField()
         name, path, args, kwargs = f.deconstruct()
@@ -120,41 +71,14 @@ class TestDatabaseSorting(TestCase):
             self.assertEqual(obj.start, dates_order[result_length-i-1])
 
 
-class ApproximateDateFormTesting(TestCase):
+class TestForm(TestCase):
     def test_form(self):
-        ApproxDateForm()
+        class ApproxDateForm(forms.ModelForm):
+            class Meta:
+                model = TestModel
+                fields = ('start', 'can_be_null')
 
-
-class TestApproximateDate(TestCase):
-
-    def test_from_string(self):
-        cases = (
-            ('9.5.1945', '%d.%m.%Y', {'year': 1945, 'month': 5, 'day': 9}),
-            ('5.1945', '%m.%Y', {'year': 1945, 'month': 5}),
-            ('1945', '%Y', {'year': 1945}),
-        )
-        for case in cases:
-            self.assertEqual(VagueDate.from_string(case[0], case[1]),
-                             VagueDate(**case[2]))
-
-        with self.assertRaises(ValueError):
-            VagueDate.from_string('9.5.1945', '%d.%Y')
-
-    def test_format(self):
-        self.assertEqual('*{:%m}*'.format(VagueDate(year=1945, month=5)), '*05*')
-
-    def test_string(self):
-        cases = (
-            (VagueDate(year=1945), '1945'),
-            (VagueDate(year=1945, month=5), '1945-05'),
-            (VagueDate(year=1945, month=5, day=9), '1945-05-09'),
-        )
-
-        for case in cases:
-            self.assertEqual(str(case[0]), case[1])
-
-    def test_repr(self):
-        self.assertEqual(repr(VagueDate(year=1945)), 'VagueDate(1945)')
+        ApproxDateForm().as_p()
 
 
 if __name__ == "__main__":

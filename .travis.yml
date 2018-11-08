@@ -8,15 +8,21 @@ matrix:
     - python: 3.6
       env: TOXENV=flake8
     - python: 3.6
-      env: TOXENV=py36-2.0
+      env: TOXENV=py36-unit
     - python: 3.6
-      env: TOXENV=py36-2.1
+      env: TOXENV=py36-django2.0
+    - python: 3.6
+      env: TOXENV=py36-django2.1
     - python: 3.7
-      env: TOXENV=py37-2.0
+      env: TOXENV=py37-unit
       dist: xenial
       sudo: true
     - python: 3.7
-      env: TOXENV=py37-2.1
+      env: TOXENV=py37-django2.0
+      dist: xenial
+      sudo: true
+    - python: 3.7
+      env: TOXENV=py37-django2.1
       dist: xenial
       sudo: true
 
