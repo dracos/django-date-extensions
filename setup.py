@@ -10,16 +10,12 @@ setup(
     long_description=open('README.txt').read(),
     author='Matthew Somerville',
     author_email='matthew-pypi@dracos.co.uk',
-    requires=[
-        'Django',
-    ],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Framework :: Django',
         'License :: OSI Approved :: BSD License',
         'Intended Audience :: Developers',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
