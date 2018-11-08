@@ -1,5 +1,7 @@
 from django.conf import settings
 
+# TODO _one_ settings object
+
 OUTPUT_FORMAT_DAY_MONTH_YEAR = getattr(settings, 'DATE_EXTENSIONS_OUTPUT_FORMAT_DAY_MONTH_YEAR', "jS F Y")
 
 OUTPUT_FORMAT_MONTH_YEAR = getattr(settings, 'DATE_EXTENSIONS_OUTPUT_FORMAT_MONTH_YEAR', "F Y")

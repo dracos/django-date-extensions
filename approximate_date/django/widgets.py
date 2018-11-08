@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from django.forms.widgets import NumberInput, MultiWidget
 from django.utils.translation import gettext_lazy as _
 
-from django_date_extensions.types import ApproximateDate
+from approximate_date.types import VagueDate
 
 
 class NumbersInput(MultiWidget):
@@ -22,7 +22,7 @@ class NumbersInput(MultiWidget):
     def decompress(self, value):
         if value is None:
             return '', '', ''
-        if isinstance(value, ApproximateDate):
+        if isinstance(value, VagueDate):
             result = (value.year, value.month or '', value.day or '')
             return [str(x) for x in result]
 

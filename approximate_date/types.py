@@ -67,7 +67,7 @@ class ApproximateDate:
             return (self.year, self.month, self.day) ==\
                    (other.year, other.month, other.day)
 
-        if not isinstance(other, ApproximateDate):
+        if not isinstance(other, VagueDate):
             return False
 
         return (self.year, self.month, self.day, self.future, self.past) ==\
@@ -77,7 +77,7 @@ class ApproximateDate:
         if other is None:
             return False
 
-        if isinstance(other, ApproximateDate):
+        if isinstance(other, VagueDate):
             if self.future or other.future:
                 return not self.future
             if self.past or other.past:
@@ -122,4 +122,4 @@ class ApproximateDate:
         return cls(**{k: getattr(parsed_date, k) for k in relevant_attributes})
 
 
-__all__ = (ApproximateDate.__name__,)
+__all__ = (VagueDate.__name__,)
