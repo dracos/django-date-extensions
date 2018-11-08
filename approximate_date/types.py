@@ -12,22 +12,24 @@ MONTH_CODES = ('%b', '%B', '%m')
 WEEKS_DAY_CODES = ('%a', '%A', '%w')
 YEARS_WEEK_CODES = ('%U', '%W')
 
-FUTURE, PAST = 'future', 'past'
+
+class ApproximateDate:
+    def __init__(self, *constraints):
+        self.constraints = set(constraints)
+
+    def possible_dates(self):
+        raise NotImplementedError
+
 
 
 @total_ordering
-class ApproximateDate:
+class VagueDate:
     """A date object that accepts 0 for month or day to mean we don't
        know when it is within that month/year."""
 
-    def __init__(self, year=0, month=0, day=0, future=False, past=False):
+    def __init__(self, year=0, month=0, day=0):
         # TODO support negative years
-        if future and past:
-            raise ValueError("Can't be both future and past")
-        elif future or past:
-            if year or month or day:
-                raise ValueError("Future or past dates can have no year, month or day")
-        elif year and month and day:
+        if year and month and day:
             date(year, month, day)
         elif year and month:
             date(year, month, 1)
@@ -38,17 +40,11 @@ class ApproximateDate:
         else:
             raise ValueError("You must specify a year")
 
-        self.future = future
-        self.past = past
         self.year = year
         self.month = month
         self.day = day
 
     def __format__(self, format_spec):
-        if self.past:
-            return PAST
-        if self.future:
-            return FUTURE
         return self._date_dummy.__format__(format_spec)
 
     def __repr__(self):
@@ -70,25 +66,17 @@ class ApproximateDate:
         if not isinstance(other, VagueDate):
             return False
 
-        return (self.year, self.month, self.day, self.future, self.past) ==\
-               (other.year, other.month, other.day, other.future, other.past)
+        return (self.year, self.month, self.day) ==\
+               (other.year, other.month, other.day)
 
     def __lt__(self, other):
         if other is None:
             return False
 
-        if isinstance(other, VagueDate):
-            if self.future or other.future:
-                return not self.future
-            if self.past or other.past:
-                return not other.past
-
         return (self.year, self.month, self.day) < (other.year, other.month, other.day)
 
     @property
     def _date_dummy(self):
-        if self.past or self.future:
-            return None
         return date(year=self.year, month=max(1, self.month), day=max(1, self.day))
 
     @classmethod
@@ -101,11 +89,6 @@ class ApproximateDate:
 
     @classmethod
     def from_string(cls, date_string, format):
-        if date_string == PAST:
-            return cls(past=True)
-        if date_string == FUTURE:
-            return cls(future=True)
-
         relevant_attributes = ['year']
 
         if any(x in format for x in FULLY_QUALIFYING_CODES) or \

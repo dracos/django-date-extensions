@@ -15,8 +15,7 @@ from approximate_date.types import VagueDate
 
 
 class VagueDateNumbersField(MultiValueField):
-    """ This field's widget does not support past and future as input values (yet?),
-        but it renders the inputs as number widgets. """
+    """ This field's widget renders the inputs as number widgets. """
     widget = NumbersInput
 
     def __init__(self, **kwargs):
@@ -47,10 +46,6 @@ class VagueDateTextField(Field):
         super(VagueDateTextField, self).clean(value)
         if value in (None, ''):
             return None
-        if value == 'future':
-            return VagueDate(future=True)
-        if value == 'past':
-            return VagueDate(past=True)
         if isinstance(value, VagueDate):
             return value
         value = re.sub(r'(?<=\d)(st|nd|rd|th)', '', value.strip())

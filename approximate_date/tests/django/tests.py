@@ -18,26 +18,12 @@ class ApproxDateForm(forms.ModelForm):
         fields = ('start', 'can_be_null')
 
 
-class PastAndFuture(TestCase):
-
-    def test_setting_both(self):
-        self.assertRaises(ValueError, VagueDate, past=True, future=True)
-
-    def test_setting_with_dates(self):
-        self.assertRaises(ValueError, VagueDate, future=True, year=2000)
-        self.assertRaises(ValueError, VagueDate, past=True, year=2000)
-
-
 class CompareDates(TestCase):
 
     def test_compare(self):
 
-        past = VagueDate(past=True)
-        past_too = VagueDate(past=True)
         y_past = VagueDate(year=2000)
         y_future = VagueDate(year=2100)
-        future = VagueDate(future=True)
-        future_too = VagueDate(future=True)
 
         # check that we can be compared to None, '' and u''
         for bad_val in ('', u'', None):
@@ -64,62 +50,6 @@ class CompareDates(TestCase):
         self.assertTrue(y_past <= y_future)
         self.assertFalse(y_future < y_past)
         self.assertFalse(y_future <= y_past)
-
-        # Future dates are always greater
-        self.assertTrue(y_past < future)
-        self.assertTrue(y_past <= future)
-        self.assertTrue(y_past != future)
-        self.assertTrue(y_future < future)
-        self.assertTrue(y_future <= future)
-        self.assertTrue(y_future != future)
-
-        self.assertTrue(future > y_past)
-        self.assertTrue(future >= y_past)
-        self.assertTrue(future != y_past)
-        self.assertTrue(future > y_future)
-        self.assertTrue(future >= y_future)
-        self.assertTrue(future != y_future)
-
-        # Past dates are always lesser
-        self.assertTrue(y_past > past)
-        self.assertTrue(y_past >= past)
-        self.assertTrue(y_past != past)
-        self.assertTrue(y_future > past)
-        self.assertTrue(y_future >= past)
-        self.assertTrue(y_future != past)
-
-        self.assertTrue(past < y_past)
-        self.assertTrue(past <= y_past)
-        self.assertTrue(past != y_past)
-        self.assertTrue(past < y_future)
-        self.assertTrue(past <= y_future)
-        self.assertTrue(past != y_future)
-
-        # Past and future comparisons
-        self.assertTrue(past < future)
-        self.assertTrue(past <= future)
-        self.assertTrue(past != future)
-
-        self.assertTrue(future > past)
-        self.assertTrue(future >= past)
-        self.assertTrue(future != past)
-
-        # Future and past dates are equal to themselves (so that sorting is sane)
-        self.assertFalse(future < future)
-        self.assertTrue(future <= future)
-        self.assertTrue(future == future)
-        self.assertTrue(future >= future)
-        self.assertFalse(future > future)
-        self.assertTrue(future == future_too)
-        self.assertFalse(future != future_too)
-
-        self.assertFalse(past < past)
-        self.assertTrue(past <= past)
-        self.assertTrue(past == past)
-        self.assertTrue(past >= past)
-        self.assertFalse(past > past)
-        self.assertTrue(past == past_too)
-        self.assertFalse(past != past_too)
 
     def test_compare_date(self):
         # TODO more challenging tests
@@ -155,7 +85,7 @@ class TestApproximateDateField(TestCase):
         self.assertEqual(f.null, new_instance.null)
 
     def test_nullable(self):
-        x = TestModel(start=VagueDate(future=True), can_be_null=None)
+        x = TestModel(start=VagueDate(year=2018), can_be_null=None)
         x.save()
         with self.assertRaises(IntegrityError):
             x.start = None
@@ -202,8 +132,6 @@ class TestApproximateDate(TestCase):
             ('9.5.1945', '%d.%m.%Y', {'year': 1945, 'month': 5, 'day': 9}),
             ('5.1945', '%m.%Y', {'year': 1945, 'month': 5}),
             ('1945', '%Y', {'year': 1945}),
-            ('future', '%Y', {'future': True}),
-            ('past', '%Y', {'past': True}),
         )
         for case in cases:
             self.assertEqual(VagueDate.from_string(case[0], case[1]),
@@ -220,15 +148,12 @@ class TestApproximateDate(TestCase):
             (VagueDate(year=1945), '1945'),
             (VagueDate(year=1945, month=5), '1945-05'),
             (VagueDate(year=1945, month=5, day=9), '1945-05-09'),
-            (VagueDate(future=True), 'future'),
-            (VagueDate(past=True), 'past'),
         )
 
         for case in cases:
             self.assertEqual(str(case[0]), case[1])
 
     def test_repr(self):
-        self.assertEqual(repr(VagueDate(past=True)), 'VagueDate(past)')
         self.assertEqual(repr(VagueDate(year=1945)), 'VagueDate(1945)')
 
 
