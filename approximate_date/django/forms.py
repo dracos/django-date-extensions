@@ -14,8 +14,17 @@ from approximate_date.types import VagueDate
 # TODO provide localized error messages
 
 
-class VagueDateNumbersField(MultiValueField):
+class VagueDateFormFieldMixin:
+    empty_values = ()
+
+    def validate(self, value):
+        return self.required and not value
+
+
+class VagueDateNumbersField(VagueDateFormFieldMixin, MultiValueField):
     """ This field's widget renders the inputs as number widgets. """
+
+    empty_values = ()
     widget = NumbersInput
 
     def __init__(self, **kwargs):
@@ -41,7 +50,7 @@ class VagueDateNumbersField(MultiValueField):
 
 
 # TODO use VagueDate.from_string
-class VagueDateTextField(Field):
+class VagueDateTextField(VagueDateFormFieldMixin, Field):
     def clean(self, value):
         super(VagueDateTextField, self).clean(value)
         if value in (None, ''):

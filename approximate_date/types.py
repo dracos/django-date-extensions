@@ -47,6 +47,9 @@ class VagueDate:
     def __format__(self, format_spec):
         return self._date_dummy.__format__(format_spec)
 
+    def __hash__(self):
+        return hash((self.__class__.__name__, self.year, self.month, self.day))
+
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, str(self))
 
@@ -64,14 +67,17 @@ class VagueDate:
                    (other.year, other.month, other.day)
 
         if not isinstance(other, VagueDate):
-            return False
+            raise TypeError
 
         return (self.year, self.month, self.day) ==\
                (other.year, other.month, other.day)
 
     def __lt__(self, other):
-        if other is None:
-            return False
+        if isinstance(other, datetime):
+            other = other.date()
+
+        if not isinstance(other, (VagueDate, date)):
+            raise TypeError
 
         return (self.year, self.month, self.day) < (other.year, other.month, other.day)
 

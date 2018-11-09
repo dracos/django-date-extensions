@@ -28,6 +28,7 @@ def test_comparison():
     assert not (y_future < y_past)
     assert not (y_future <= y_past)
 
+    # TODO test other operands
     assert VagueDate(2008, 9, 3) == date(2008, 9, 3)
     assert VagueDate(2008, 9, 3) < date(2009, 9, 3)
     assert VagueDate(2007) < date(2007, 9, 3)
