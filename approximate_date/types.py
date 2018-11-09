@@ -104,5 +104,9 @@ class VagueDate:
         parsed_date = datetime.strptime(date_string, format).date()
         return cls(**{k: getattr(parsed_date, k) for k in relevant_attributes})
 
+    @property
+    def is_precise(self):
+        return bool(self.day)
+
 
 __all__ = (VagueDate.__name__,)
