@@ -6,7 +6,7 @@ sudo: false
 matrix:
   include:
     - python: 3.6
-      env: TOXENV=flake8
+      env: TOXENV=black,flake8
     - python: 3.6
       env: TOXENV=py36-unit
     - python: 3.6
