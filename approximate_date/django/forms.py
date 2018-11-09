@@ -23,6 +23,7 @@ class VagueDateFormFieldMixin:
 
 class VagueDateNumbersField(VagueDateFormFieldMixin, MultiValueField):
     """ This field's widget renders the inputs as number widgets. """
+
     widget = NumbersInput
 
     def __init__(self, **kwargs):
@@ -45,15 +46,23 @@ class VagueDateNumbersField(VagueDateFormFieldMixin, MultiValueField):
             raise ValidationError(e)
 
 
-# TODO use VagueDate.from_string
 class VagueDateTextField(VagueDateFormFieldMixin, Field):
-    def clean(self, value):
-        super(VagueDateTextField, self).clean(value)
-        if value in (None, ""):
+    def to_python(self, value):
+        if isinstance(value, str):
+            value = value.strip()
+            if not value:
+                return None
+            return self.parse_string(value)
+        elif value is None:
             return None
-        if isinstance(value, VagueDate):
+        elif isinstance(value, VagueDate):
             return value
-        value = re.sub(r"(?<=\d)(st|nd|rd|th)", "", value.strip())
+        raise TypeError
+
+    # TODO use VagueDate.from_string
+    @staticmethod
+    def parse_string(value):
+        value = re.sub(r"(?<=\d)(st|nd|rd|th)", "", value)
         for date_format in settings.DATE_INPUT_FORMATS:
             try:
                 return VagueDate(*time.strptime(value, date_format)[:3])

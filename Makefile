@@ -11,8 +11,16 @@ export PRINT_HELP_PYSCRIPT
 
 .PHONY: black
 black: ## code-formatting with black
-		black approximate_date examples setup.py 
+		black approximate_date examples setup.py
 
 .PHONY: help
 help:
 		@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
+
+.PHONY: lint
+lint: black ## check style with flake8
+	flake8 approximate_date examples setup.py
+
+.PHONY: test
+test: lint ## run all tests
+	tox

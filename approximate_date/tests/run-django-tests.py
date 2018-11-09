@@ -7,9 +7,9 @@ from pathlib import Path
 sys.path.pop(0)
 sys.path.insert(0, (str(Path(__file__).resolve().parents[2])))
 
-import django
-from django.conf import settings
-from django.test.utils import get_runner
+import django  # noqa: E402
+from django.conf import settings  # noqa: E402
+from django.test.utils import get_runner  # noqa: E402
 
 
 if __name__ == "__main__":

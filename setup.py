@@ -6,7 +6,7 @@ setup(
     url="https://github.com/dracos/django-date-extensions",
     packages=["approximate_date"],  # TODO find
     license="BSD",
-    description="This code adds a few small extensions to Django's DateField, to handle both approximate dates (e.g. 'March 1963') and default year dates (e.g. assume '24th June' is the most recent such).",
+    description="This has to be updated",
     long_description=open("README.txt").read(),
     author="Matthew Somerville",
     author_email="matthew-pypi@dracos.co.uk",
