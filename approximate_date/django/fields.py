@@ -6,7 +6,7 @@ from django.db import models
 
 from approximate_date.types import VagueDate
 from approximate_date.django.forms import VagueDateNumbersField
-from approximate_date.django.utils import (
+from approximate_date.utils import (
     vague_date_as_signed_int,
     vague_date_from_signed_int,
 )

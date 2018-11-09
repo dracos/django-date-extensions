@@ -36,10 +36,11 @@ def vague_date_from_signed_int(value):
     assert isinstance(value, int)
 
     abs_value = abs(value)
+    multiplier = value // abs_value
     day = abs_value & DAY_MASK
     abs_value >>= DAY_WIDTH
     month = abs_value & MONTH_MASK
     abs_value >>= MONTH_WIDTH
-    year = abs_value * (value // abs_value)
+    year = abs_value * multiplier
 
     return VagueDate(year=year, month=month, day=day)
