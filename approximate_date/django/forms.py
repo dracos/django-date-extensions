@@ -23,17 +23,15 @@ class VagueDateFormFieldMixin:
 
 class VagueDateNumbersField(VagueDateFormFieldMixin, MultiValueField):
     """ This field's widget renders the inputs as number widgets. """
-
-    empty_values = ()
     widget = NumbersInput
 
     def __init__(self, **kwargs):
         fields = (
             IntegerField(required=False),
             IntegerField(required=False, min_value=0, max_value=12),
-            IntegerField(required=False, min_value=0, max_value=31)
+            IntegerField(required=False, min_value=0, max_value=31),
         )
-        super().__init__(fields, **{**kwargs, 'require_all_fields': False})
+        super().__init__(fields, **{**kwargs, "require_all_fields": False})
 
     def compress(self, data_list):
         if not data_list or data_list[0] is None:
@@ -41,9 +39,7 @@ class VagueDateNumbersField(VagueDateFormFieldMixin, MultiValueField):
 
         try:
             return VagueDate(
-                year=data_list[0] or 0,
-                month=data_list[1] or 0,
-                day=data_list[2] or 0
+                year=data_list[0] or 0, month=data_list[1] or 0, day=data_list[2] or 0
             )
         except ValueError as e:
             raise ValidationError(e)
@@ -53,11 +49,11 @@ class VagueDateNumbersField(VagueDateFormFieldMixin, MultiValueField):
 class VagueDateTextField(VagueDateFormFieldMixin, Field):
     def clean(self, value):
         super(VagueDateTextField, self).clean(value)
-        if value in (None, ''):
+        if value in (None, ""):
             return None
         if isinstance(value, VagueDate):
             return value
-        value = re.sub(r'(?<=\d)(st|nd|rd|th)', '', value.strip())
+        value = re.sub(r"(?<=\d)(st|nd|rd|th)", "", value.strip())
         for date_format in settings.DATE_INPUT_FORMATS:
             try:
                 return VagueDate(*time.strptime(value, date_format)[:3])
@@ -74,7 +70,7 @@ class VagueDateTextField(VagueDateFormFieldMixin, Field):
                 return VagueDate(time.strptime(value, year_format)[0], 0, 0)
             except ValueError:
                 continue
-        raise ValidationError('Please enter a valid date.')
+        raise ValidationError("Please enter a valid date.")
 
 
 __all__ = (VagueDateNumbersField.__name__, VagueDateTextField.__name__)

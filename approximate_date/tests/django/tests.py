@@ -59,16 +59,16 @@ class TestDatabaseSorting(TestCase):
         for _date in dates_order:
             TestModel.objects.create(start=_date)
 
-        query_result = TestModel.objects.order_by('start')
+        query_result = TestModel.objects.order_by("start")
         for i, obj in enumerate(query_result):
             self.assertIsInstance(obj.start, VagueDate)
             self.assertEqual(obj.start, dates_order[i])
 
-        query_result = TestModel.objects.order_by('-start')
+        query_result = TestModel.objects.order_by("-start")
         result_length = len(query_result)
         self.assertEqual(result_length, len(dates_order))
         for i, obj in enumerate(query_result):
-            self.assertEqual(obj.start, dates_order[result_length-i-1])
+            self.assertEqual(obj.start, dates_order[result_length - i - 1])
 
 
 class TestForm(TestCase):
@@ -76,7 +76,7 @@ class TestForm(TestCase):
         class ApproxDateForm(forms.ModelForm):
             class Meta:
                 model = TestModel
-                fields = ('start', 'can_be_null')
+                fields = ("start", "can_be_null")
 
         ApproxDateForm().as_p()
 
