@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 from django.forms.widgets import NumberInput, MultiWidget
 from django.utils.translation import gettext_lazy as _
 
