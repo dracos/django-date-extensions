@@ -1,22 +1,26 @@
-from setuptools import setup
+from setuptools import find_packages, setup
+
+
+with open('README.rst', 'rt') as f:
+    LONG_DESCRIPTION = f.read()
 
 setup(
     name="approximate-date",
-    version="2.0",
-    url="https://github.com/dracos/django-date-extensions",
-    packages=["approximate_date"],  # TODO find
+    version="0.1b1",
+    url="https://github.com/funkyfuture/approximate-date",
+    packages=find_packages(exclude=["*.tests", "*.tests.*"]),
     license="BSD",
-    description="This has to be updated",
-    long_description=open("README.txt").read(),
-    author="Matthew Somerville",
-    author_email="matthew-pypi@dracos.co.uk",
+    description="Python types and Django components to handle imprecise dates.",
+    long_description=LONG_DESCRIPTION,
+    long_description_content_type="text/x-rst",
+    keyworks='dates',
+    author="Frank Sachsenheim",
+    author_email="funkyfuture@riseup.net",
     classifiers=[
-        "Development Status :: 5 - Production/Stable",
-        "Environment :: Web Environment",
+        "Development Status :: 4 - Beta",
         "Framework :: Django",
         "License :: OSI Approved :: BSD License",
         "Intended Audience :: Developers",
-        "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Topic :: Database",
