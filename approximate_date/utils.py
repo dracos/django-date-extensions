@@ -15,7 +15,7 @@ YEAR_WIDTH = 31 - MONTH_WIDTH - DAY_WIDTH
 MAX_YEAR_VALUE = 2 ** YEAR_WIDTH - 1
 
 
-def vague_date_as_signed_int(value):
+def vague_date_as_signed_int(value: VagueDate) -> int:
     assert isinstance(value, VagueDate), type(value)
 
     abs_year = abs(value.year)
@@ -32,7 +32,7 @@ def vague_date_as_signed_int(value):
     return result
 
 
-def vague_date_from_signed_int(value):
+def vague_date_from_signed_int(value: int) -> VagueDate:
     assert isinstance(value, int)
 
     abs_value = abs(value)

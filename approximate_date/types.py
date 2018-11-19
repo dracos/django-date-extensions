@@ -21,10 +21,15 @@ class ApproximateDate:
 
 @total_ordering
 class VagueDate:
-    """A date object that accepts 0 for month or day to mean we don't
-       know when it is within that month/year."""
+    """ An object that represents an imprecise date that doesn't require a month and/or
+        day to be specified. These unspecified attributes are represented with a value
+        of ``0``.
 
-    def __init__(self, year=0, month=0, day=0):
+        :class:`approximate_date.django.fields.VagueDateField` implements a
+        complementary database model field for the Django framework.
+    """
+
+    def __init__(self, year: int = 0, month: int = 0, day: int = 0) -> None:
         # TODO support negative years
         if year and month and day:
             date(year, month, day)
@@ -85,15 +90,19 @@ class VagueDate:
         return date(year=self.year, month=max(1, self.month), day=max(1, self.day))
 
     @classmethod
-    def from_date(cls, value):
+    def from_date(cls, value: date) -> "VagueDate":
+        """ Returns an instance derived from a :class:`datetime.date` instance. """
         return cls(year=value.year, month=value.month, day=value.day)
 
     @classmethod
-    def from_datetime(cls, value):
+    def from_datetime(cls, value: datetime) -> "VagueDate":
+        """ Returns an instance derived from a :class:`datetime.datetime` instance. """
         return cls.from_date(value.date())
 
     @classmethod
-    def from_string(cls, date_string, format):
+    def from_string(cls, date_string: str, format: str) -> "VagueDate":
+        """ Returns an instance parsed from a string according to the provided
+            format. """
         relevant_attributes = ["year"]
 
         if any(x in format for x in FULLY_QUALIFYING_CODES) or (
@@ -111,7 +120,8 @@ class VagueDate:
         return cls(**{k: getattr(parsed_date, k) for k in relevant_attributes})
 
     @property
-    def is_precise(self):
+    def is_precise(self) -> bool:
+        """ Is ``True`` when the date is qualified with year, month and day. """
         return bool(self.day)
 
 

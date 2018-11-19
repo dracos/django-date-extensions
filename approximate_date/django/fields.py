@@ -11,7 +11,7 @@ FORMAT_STRINGS = ("%Y", "%Y-%m", "%Y-%m-%d")
 
 
 class VagueDateField(models.IntegerField):
-    """ A model field to store VagueDate objects in the database. """
+    """ A Django database model field to store VagueDate objects in the database. """
 
     description = "An imprecise date."
 
