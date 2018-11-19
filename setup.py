@@ -1,23 +1,23 @@
 from setuptools import find_packages, setup
 
 
-with open('README.rst', 'rt') as f:
+with open("README.rst", "rt") as f:
     LONG_DESCRIPTION = f.read()
 
 setup(
     name="approximate-date",
-    version="0.1b1",
+    version="0.1a1",
     url="https://github.com/funkyfuture/approximate-date",
     packages=find_packages(exclude=["*.tests", "*.tests.*"]),
     license="BSD",
     description="Python types and Django components to handle imprecise dates.",
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/x-rst",
-    keyworks='dates',
+    keyworks="dates",
     author="Frank Sachsenheim",
     author_email="funkyfuture@riseup.net",
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 3 - Alpha",
         "Framework :: Django",
         "License :: OSI Approved :: BSD License",
         "Intended Audience :: Developers",
