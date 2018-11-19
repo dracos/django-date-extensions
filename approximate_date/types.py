@@ -72,7 +72,7 @@ class VagueDate:
             )
 
         if not isinstance(other, VagueDate):
-            raise TypeError
+            return False
 
         return (self.year, self.month, self.day) == (other.year, other.month, other.day)
 
@@ -81,7 +81,7 @@ class VagueDate:
             other = other.date()
 
         if not isinstance(other, (VagueDate, date)):
-            raise TypeError
+            return False
 
         return (self.year, self.month, self.day) < (other.year, other.month, other.day)
 
