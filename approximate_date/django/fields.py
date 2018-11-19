@@ -14,9 +14,7 @@ class VagueDateField(models.IntegerField):
     """ A Django database model field to store VagueDate objects in the database. """
 
     description = "An imprecise date."
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    validators = []  # TODO
 
     # from db
     def from_db_value(self, value, expression, connection):
