@@ -49,6 +49,12 @@ def test_from_string(input, format, expected):
     assert result.day == expected.get("day", 0)
 
 
+def test_from_isoesque_string():
+    assert VagueDate.from_string("1984") == VagueDate(year=1984)
+    assert VagueDate.from_string("1984-03") == VagueDate(year=1984, month=3)
+    assert VagueDate.from_string("1984-03-16") == VagueDate(year=1984, month=3, day=16)
+
+
 def test_invalid_from_string():
     with raises(ValueError):
         VagueDate.from_string("9.5.1945", "%d.%Y")

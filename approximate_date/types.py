@@ -2,6 +2,7 @@
 
 from datetime import date, datetime
 from functools import total_ordering
+from typing import Optional
 
 
 FULLY_QUALIFYING_CODES = ("%c", "%j", "x", "%X")
@@ -100,21 +101,32 @@ class VagueDate:
         return cls.from_date(value.date())
 
     @classmethod
-    def from_string(cls, date_string: str, format: str) -> "VagueDate":
+    def from_string(cls, date_string: str, format: Optional[str] = None) -> "VagueDate":
         """ Returns an instance parsed from a string according to the provided
-            format. """
-        relevant_attributes = ["year"]
-
-        if any(x in format for x in FULLY_QUALIFYING_CODES) or (
-            any(x in format for x in YEARS_WEEK_CODES)
-            and any(x in format for x in WEEKS_DAY_CODES)
-        ):
-            relevant_attributes.extend(("month", "day"))
+            format. If no format is defined, an ISO-like format is assumed as
+            returned by an instance's ``__str__`` method. """
+        if format is None:
+            try:
+                format, relevant_attributes = (
+                    ("%Y", ("year",)),
+                    ("%Y-%m", ("year", "month")),
+                    ("%Y-%m-%d", ("year", "month", "day")),
+                )[date_string.count("-")]
+            except IndexError:
+                raise ValueError
         else:
-            if any(x in format for x in MONTH_CODES):
-                relevant_attributes.append("month")
-                if MONTHS_DAY_CODE in format:
-                    relevant_attributes.append("day")
+            relevant_attributes = ["year"]
+
+            if any(x in format for x in FULLY_QUALIFYING_CODES) or (
+                any(x in format for x in YEARS_WEEK_CODES)
+                and any(x in format for x in WEEKS_DAY_CODES)
+            ):
+                relevant_attributes.extend(("month", "day"))
+            else:
+                if any(x in format for x in MONTH_CODES):
+                    relevant_attributes.append("month")
+                    if MONTHS_DAY_CODE in format:
+                        relevant_attributes.append("day")
 
         parsed_date = datetime.strptime(date_string, format).date()
         return cls(**{k: getattr(parsed_date, k) for k in relevant_attributes})
