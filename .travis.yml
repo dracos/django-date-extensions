@@ -1,19 +1,21 @@
+dist: xenial
+
 notifications:
   email: false
 
 language: python
+python: 3.6
 
-sudo: false
-
+matrix:
+  include:
+    - python: 2.7
+      env: TOXENV=py27-1.11
 env:
   matrix:
     - TOXENV=flake8
-    - TOXENV=py27-1.8
-    - TOXENV=py27-1.9
-    - TOXENV=py27-1.10
-    - TOXENV=py34-1.8
-    - TOXENV=py34-1.9
-    - TOXENV=py34-1.10
+    - TOXENV=py36-1.11
+    - TOXENV=py36-2.1
+    - TOXENV=py36-2.2
 
 install:
   - pip install tox
