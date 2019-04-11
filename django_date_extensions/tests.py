@@ -4,8 +4,9 @@ import unittest
 
 from django.db import models
 from django import forms
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django import VERSION as DJANGO_VERSION
+from django.utils.encoding import force_text
 
 from .fields import ApproximateDate, ApproximateDateField
 
@@ -175,6 +176,13 @@ class ApproxDateFiltering(unittest.TestCase):
         qs = ApproxDateModel.objects.filter(start__gt=datetime.now())
         # force evaluate queryset
         list(qs)
+
+
+class ApproxDateI18n(unittest.TestCase):
+    @override_settings(LANGUAGE_CODE='ru')
+    def test_date_in_russian(self):
+        date = ApproximateDate(year=2000, month=5)
+        self.assertEqual(force_text(date), u'\u041c\u0430\u0439 2000')
 
 
 class ApproximateDateFieldTesting(TestCase):
