@@ -14,8 +14,9 @@ env:
   matrix:
     - TOXENV=flake8
     - TOXENV=py36-1.11
-    - TOXENV=py36-2.1
     - TOXENV=py36-2.2
+    - TOXENV=py36-3.0
+    - TOXENV=py36-3.1
 
 install:
   - pip install tox
