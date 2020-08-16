@@ -7,7 +7,11 @@ from django.db import models
 from django import forms
 from django.forms import ValidationError
 from django.utils import dateformat
-from django.utils.encoding import python_2_unicode_compatible
+try:
+    from django.utils.encoding import python_2_unicode_compatible
+except ImportError:
+    # Django 3+, no longer present, we know wre are Python 3, so can be null
+    def python_2_unicode_compatible(f): return f
 
 from . import settings
 from .widgets import PrettyDateInput
