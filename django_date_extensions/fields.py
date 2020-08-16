@@ -114,7 +114,7 @@ class ApproximateDateField(models.CharField):
         return self.from_db_value(value)
 
     def from_db_value(self, value, expression=None, connection=None, context=None):
-        if value in (None, ''):
+        if not value:
             return ''
 
         if value == 'future':
@@ -133,7 +133,7 @@ class ApproximateDateField(models.CharField):
             raise ValidationError(msg)
 
     def get_prep_value(self, value):
-        if value in (None, ''):
+        if not value:
             return ''
         if isinstance(value, ApproximateDate):
             return repr(value)
@@ -167,7 +167,7 @@ class ApproximateDateFormField(forms.fields.Field):
 
     def clean(self, value):
         super(ApproximateDateFormField, self).clean(value)
-        if value in (None, ''):
+        if not value:
             return None
         if value == 'future':
             return ApproximateDate(future=True)
@@ -213,7 +213,7 @@ class PrettyDateField(forms.fields.Field):
         datetime.date object.
         """
         super(PrettyDateField, self).clean(value)
-        if value in (None, ''):
+        if not value:
             return None
         if value == 'future':
             return ApproximateDate(future=True)
