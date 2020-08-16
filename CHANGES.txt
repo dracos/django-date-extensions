@@ -1,3 +1,11 @@
+Version 3.1
+
+This version supports Django 1.11 to 3.1.
+
+It also switches to a truthy check rather than only checking for None and '',
+as something that may help fix e.g. situations with migrations containing
+bytestrings.
+
 Version 3.0
 
 This version supports Django 1.11 to 2.2, and makes ApproximateDate Unicode
