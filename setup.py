@@ -4,9 +4,12 @@ setup(
     name='django_date_extensions',
     version='3.0',
     url='https://github.com/dracos/django-date-extensions',
-    packages=['django_date_extensions',],
+    packages=['django_date_extensions'],
     license='BSD',
-    description="This code adds a few small extensions to Django's DateField, to handle both approximate dates (e.g. 'March 1963') and default year dates (e.g. assume '24th June' is the most recent such).",
+    description=(
+        "This code adds a few small extensions to Django's DateField,"
+        "to handle both approximate dates (e.g. 'March 1963') and default year dates"
+        "(e.g. assume '24th June' is the most recent such)."),
     long_description=open('README.txt').read(),
     author='Matthew Somerville',
     author_email='matthew-pypi@dracos.co.uk',
