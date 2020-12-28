@@ -3,6 +3,7 @@ import os
 import unittest
 
 from django.db import models
+from django.core import serializers
 from django import forms
 from django.test import TestCase, override_settings
 from django import VERSION as DJANGO_VERSION
@@ -202,6 +203,11 @@ class ApproximateDateFieldTesting(TestCase):
         self.assertEqual(1, ApproxDateModel.objects.filter(start=a1.start).count())
         self.assertEqual(1, ApproxDateModel.objects.filter(start="").count())
         self.assertEqual(1, ApproxDateModel.objects.filter(start=a1.start or "").count())
+
+    def test_serialization(self):
+        a = ApproxDateModel.objects.create(start=ApproximateDate(year=2020, month=12))
+        data = serializers.serialize("xml", [a])
+        self.assertIn('<field name="start" type="CharField">2020-12-00</field>', data)
 
 
 class ApproximateDateFormTesting(unittest.TestCase):
