@@ -1,3 +1,8 @@
+Version 3.1.2
+
+This version removes a warning about from_db_value, thanks swizzlevixen.
+Supports Django up to 3.2.
+
 Version 3.1.1
 
 This version fixes a bug with serialization, thanks jonancm.
